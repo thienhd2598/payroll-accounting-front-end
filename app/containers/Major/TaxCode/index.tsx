@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../../Layout/LayoutContext';
-import buildColumn from './components/SalaryColumn';
+import buildColumn from './components/TaxCodeColumn';
 import StaffService from 'services/Staff/Staff.service';
 import { useQuery } from 'react-query';
 import { formatNumberToCurrency } from 'utils/helper';
@@ -102,12 +102,8 @@ const Page = () => {
                     /> */}
                     <TableCommon
                         dataSource={[
-                            { id: 1, name: 'Nguyễn Khánh Thiện', b1: 18000000, b2: 22, b3: 8, b4: 0.08, b5: 0.015, b6: 0.01 },
-                            { id: 2, name: 'Nguyễn Thị Ánh Lê', b1: 9500000, b2: 22, b3: 8, b4: 0.04, b5: 0.02, b6: 0.01 },
-                            { id: 3, name: 'Trần Phương Linh', b1: 6500000, b2: 22, b3: 8, b4: 0.04, b5: 0.02, b6: 0.01 },
-                            { id: 4, name: 'Đinh Công Mạnh', b1: 12000000, b2: 22, b3: 8, b4: 0.06, b5: 0.015, b6: 0.01 },
-                            { id: 5, name: 'Lò Thị Trang', b1: 11500000, b2: 22, b3: 8, b4: 0.06, b5: 0.02, b6: 0.01 },
-                            { id: 6, name: 'Phạm Đức Anh Tuấn', b1: 10000000, b2: 22, b3: 8, b4: 0.06, b5: 0.015, b6: 0.01 },                            
+                            { id: 1, name: 'Thuế thu nhập tính thuế/tháng', rate: 5 },
+                            { id: 2, name: 'Thuế thu nhập tính thuế/tháng', rate: 5 },
                         ]}
                         scroll={{ x: 1550 }}
                         loading={false}
