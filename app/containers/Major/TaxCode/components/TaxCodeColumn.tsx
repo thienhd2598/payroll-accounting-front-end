@@ -24,7 +24,7 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             )
         },
         {
-            title: 'Tên nhân viên',
+            title: 'Tên cấp bậc thuế',
             dataIndex: 'name',
             key: 'name',
             render: (name) => (
@@ -32,53 +32,13 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             )
         },
         {
-            title: 'Lương cơ bản',
-            dataIndex: 'b1',
-            key: 'b1',
-            render: (b1) => (
-                <Text>{formatNumberToCurrency(b1)} vnđ</Text>
+            title: 'Tỉ lệ chịu thuế',
+            dataIndex: 'rate',
+            key: 'rate',
+            render: (rate) => (
+                <Text>{formatNumberToCurrency(rate)} vnđ</Text>
             )
-        },
-        {
-            title: 'Ngày công chuẩn',
-            dataIndex: 'b2',
-            key: 'b2',
-            render: (b2) => (
-                <Text>{b2 || '--'} ngày</Text>
-            )
-        },
-        {
-            title: 'Giờ công chuẩn',
-            dataIndex: 'b3',
-            key: 'b3',
-            render: (b3) => (
-                <Text>{b3 || '--'} giờ</Text>
-            )
-        },
-        {
-            title: 'Tỉ lệ bảo hiểm xã hội',
-            dataIndex: 'b4',
-            key: 'b4',
-            render: (b4) => (
-                <Text>{b4 || '--'} %</Text>
-            )
-        },
-        {
-            title: 'Tỉ lệ bảo hiểm y tế',
-            dataIndex: 'b5',
-            key: 'b5',
-            render: (b5) => (
-                <Text>{b5 || '--'} %</Text>
-            )
-        },
-        {
-            title: 'Tỉ lệ bảo hiểm thất nghiệp',
-            dataIndex: 'b6',
-            key: 'b6',
-            render: (b6) => (
-                <Text>{b6 || '--'} %</Text>
-            )
-        },        
+        },               
         {
             title: 'Thao tác',
             dataIndex: 'action',
