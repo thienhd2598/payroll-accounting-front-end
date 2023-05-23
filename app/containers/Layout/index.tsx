@@ -7,6 +7,8 @@ import Position from 'containers/Position/Loadable';
 import TimeKeeping from 'containers/Major/TimeKeeping/Loadable';
 import Staff from 'containers/Staff/Loadable';
 import Salary from 'containers/Major/Salary/Loadable';
+import AdvanceSalary from 'containers/Major/AdvanceSalary/Loadable';
+import Payroll from 'containers/Major/Paroll/Loadable';
 
 const Layout = () => {
   return (
@@ -18,6 +20,8 @@ const Layout = () => {
         <Route exact path={'/quan-ly-nhan-vien'} component={Staff} />        
         <Route exact path={'/cham-cong'} component={TimeKeeping} />        
         <Route exact path={'/tham-so-luong'} component={Salary} />        
+        <Route exact path={'/ung-luong'} component={AdvanceSalary} />        
+        <Route exact path={'/tinh-luong'} component={Payroll} />        
       </Switch>
     </Dashboard>
   );
