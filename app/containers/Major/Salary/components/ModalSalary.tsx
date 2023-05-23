@@ -1,20 +1,18 @@
-import { Button, Checkbox, Col, Form, Input, Modal, Radio, Row, Space, Spin, Select, DatePicker } from "antd";
+import { Button, Checkbox, Col, Form, Input, Modal, Radio, Row, Space, Spin } from "antd";
 import React, { memo, useCallback, useMemo } from "react";
 import CompanyService from 'services/Company/Company.service';
 import { CreateCompanyRequest, UpdateCompanyRequest } from 'services/Company/Company.types';
 import { showAlert } from 'utils/helper';
 import { useMutation } from 'react-query';
 
-interface IModalCompany {
+interface IModalDepartment {
     action: string,
     onHide: () => void,
     currentData: any,
     refetch: any
 }
 
-const { Option } = Select;
-
-const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) => {
+const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartment) => {
     const [form] = Form.useForm();
     const { isLoading: loadingCreateCompany, mutate: mutateCreateCompany, } = useMutation(
         (params: CreateCompanyRequest) => {
@@ -22,12 +20,12 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
         }, {
         onSuccess: (res) => {
             if (res.status === 200) {
-                showAlert.success('Tạo nhân viên thành công');
+                showAlert.success('Tạo chức vụ thành công');
                 refetch();
                 onHide();
             } else {
                 showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
-            }
+            }            
         },
         onError: (err: Error) => {
             showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
@@ -41,7 +39,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
         }, {
         onSuccess: (res) => {
             if (res.status === 200) {
-                showAlert.success('Cập nhật nhân viên thành công');
+                showAlert.success('Cập nhật chức vụ thành công');                
                 refetch();
                 onHide();
             } else {
@@ -91,7 +89,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
 
     return (
         <Modal
-            title={action === 'create' ? 'Tạo mới nhân viên' : 'Cập nhật thông tin nhân viên'}
+            title={action === 'create' ? 'Tạo mới chức vụ' : 'Cập nhật thông tin chức vụ'}
             open={!!action}
             keyboard={true}
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
@@ -132,97 +130,57 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                     <Row gutter={20}>
                         <Col span={12}>
                             <Form.Item
-                                name="position"
-                                label="Tên nhân viên"
-                                required
+                                name="name"
+                                label="Tên công ty"
+                                rules={[
+                                    { required: true, message: 'Tên công ty không được để trống!' },
+                                ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Tên nhân viên"
+                                    placeholder="Tên công ty"
                                     allowClear
                                 />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="name"
-                                label="Chức vụ"
-                                rules={[
-                                    { required: true, message: 'Chức vụ không được để trống!' },
-                                ]}
-                            >
-                                <Select
-                                    className="input-item"
-                                    placeholder="Chọn chức vụ nhân viên"
-                                    allowClear
-                                >
-                                    {[
-                                        { title: 'Giám đốc', id: 1 },
-                                        { title: 'Phó giám đốc', id: 2 },
-                                        { title: 'Giám đốc công nghệ', id: 3 },
-                                        { title: 'Kế toán trưởng', id: 4 },
-                                        { title: 'Trưởng nhóm', id: 5 },
-                                        { title: 'Nhân viên', id: 6 },
-                                    ]?.map((_document: any, index: number) => (
-                                        <Option value={_document.id} key={`document-change-status-${index}`}>
-                                            {_document?.title}
-                                        </Option>
-                                    ))}
-                                </Select>
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item
                                 name="tax_code"
-                                label="Phòng ban"
+                                label="Mã số thuế"
                                 rules={[
-                                    { required: true, message: 'Phòng ban không được để trống!' },
+                                    { required: true, message: 'Mã số thuế không được để trống!' },
                                 ]}
-                            >
-                                <Select
-                                    className="input-item"
-                                    placeholder="Chọn phòng ban nhân viên"
-                                    allowClear
-                                >
-                                    {[
-                                        { id: 1, name: 'Công nghệ' },
-                                        { id: 2, name: 'Vận hành' },
-                                        { id: 3, name: 'Kế toán' },
-                                        { id: 4, name: 'Grow 1' },
-                                        { id: 5, name: 'Grow 2' },
-                                        { id: 6, name: 'Grow 3' },
-                                        { id: 7, name: 'Hành chính nhân sự' },
-                                        { id: 8, name: 'Media' },
-                                        { id: 9, name: 'Marketing' },
-                                    ]?.map((_document: any, index: number) => (
-                                        <Option value={_document.id} key={`document-change-status-${index}`}>
-                                            {_document?.name}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="position"
-                                label="Cấp bậc thuế"
-                                required
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Cấp bậc thuế"
+                                    placeholder="Mã số thuế"
                                     allowClear
                                 />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="fax"
-                                label="Mã số thuế"
+                                name="deputy"
+                                label="Người đại diện pháp luật"
+                                rules={[
+                                    { required: true, message: 'Người đại diện pháp luật không được để trống!' },
+                                ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Fax"
+                                    placeholder="Người đại diện pháp luật"
+                                    allowClear
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="position"
+                                label="Chức vụ"
+                            >
+                                <Input
+                                    className="input-item"
+                                    placeholder="Chức vụ"
                                     allowClear
                                 />
                             </Form.Item>
@@ -265,12 +223,48 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="description"
-                                label="Sinh nhật"
+                                name="fax"
+                                label="Fax"
                             >
-                                <DatePicker
+                                <Input
                                     className="input-item"
-                                    placeholder="Sinh nhật"
+                                    placeholder="Fax"
+                                    allowClear
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="account_number"
+                                label="Tài khoản số"
+                            >
+                                <Input
+                                    className="input-item"
+                                    placeholder="Tài khoản số"
+                                    allowClear
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="bank"
+                                label="Ngân hàng"
+                            >
+                                <Input
+                                    className="input-item"
+                                    placeholder="Ngân hàng"
+                                    allowClear
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="description"
+                                label="Mô tả"
+                            >
+                                <Input
+                                    className="input-item"
+                                    placeholder="Mô tả"
                                     allowClear
                                 />
                             </Form.Item>
@@ -282,4 +276,4 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
     )
 };
 
-export default memo(ModalCompany);
+export default memo(ModalDepartment);

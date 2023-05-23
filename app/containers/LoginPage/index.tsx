@@ -129,9 +129,9 @@ const Login = () => {
                     Đăng nhập
                   </Button>
                 </Form.Item>
-                <Row justify="center" style={{ marginTop: 30 }}>
+                {/* <Row justify="center" style={{ marginTop: 30 }}>
                   <Text>Doanh nghiệp chưa có tài khoản? Vui lòng <Link href='/register'>vào đây</Link> để đăng ký.</Text>
-                </Row>
+                </Row> */}
               </Form>
             </Spin>
           </Card>

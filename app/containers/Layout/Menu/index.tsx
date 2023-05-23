@@ -68,6 +68,10 @@ const MenuData: Array<MenuDataProps> = [
         label: 'Chấm công'
       },
       {
+        key: '/ung-luong',
+        label: 'Tạm ứng lương'
+      },
+      {
         key: '/tham-so-luong',
         label: 'Tham số lương'
       },      

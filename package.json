@@ -95,6 +95,7 @@
     "less-loader": "6.0.0",
     "localforage": "1.10.0",
     "lodash": "4.17.15",
+    "moment": "2.29.4",
     "offline-plugin": "5.0.7",
     "push-notification-preview": "0.2.0",
     "querystring": "0.2.1",
