@@ -22,6 +22,7 @@ import 'sanitize.css/sanitize.css';
 import 'antd/dist/reset.css';
 // Import root app
 import App from 'containers/App';
+import * as OfflinePluginRuntime from 'offline-plugin/runtime';
 
 // Load the favicon and the .htaccess file
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
@@ -127,6 +128,6 @@ export { store };
 // Install ServiceWorker and AppCache in the end since
 // it's not most important operation and if main code fails,
 // we do not want it installed
-// if (process.env.NODE_ENV === 'production') {
-//   OfflinePluginRuntime.install();
-// }
+if (process.env.NODE_ENV === 'production') {
+  OfflinePluginRuntime.install();
+}
