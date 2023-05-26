@@ -66,6 +66,7 @@ const Page = () => {
             console.log({ res });
             if (res.statusCode === 200) {
                 showAlert.success(res?.message || 'Tính lương thành công');
+                form.resetFields();
                 setShowPayroll(false);
                 setDataPayroll(prev => prev.concat(res?.data));
             } else {

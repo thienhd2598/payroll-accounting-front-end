@@ -126,7 +126,7 @@ const Page = () => {
                 style={{ marginBottom: 20 }}
                 title="Danh sách phòng ban"
                 bordered={false}
-                extra={
+                extra={localStorage.getItem('role') === 'hr' ?
                     <Button
                         type="primary"
                         className="btn-base"
@@ -138,7 +138,7 @@ const Page = () => {
                     >
                         Thêm mới
                     </Button>
-                }
+                : null}
             >
                 <Space className='space-base' direction="vertical" size={30}>
                     {/* <FilterCommon

@@ -22,6 +22,7 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                 showAlert.success('Tạo chức vụ thành công');
                 refetch();
                 onHide();
+                form.resetFields();
             } else {
                 showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
