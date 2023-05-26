@@ -33,6 +33,7 @@ const Page = () => {
     const [dataPayroll, setDataPayroll] = useState<any>([]);
     const [action, setAction] = useState<string>('');
     const [isShow, setIsShow] = useState<boolean>(false);
+    const [currentParoll, setCurrentParoll] = useState<any>(null);
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -229,6 +230,29 @@ const Page = () => {
             ),
         },
         {
+            title: 'Tạm ứng',
+            children: [
+                {
+                    title: 'TK nợ 334',
+                    dataIndex: 'price',
+                    key: 'price',
+                    width: 100,
+                    render: (price) => (
+                        <Text>{formatNumberToCurrency(price) || '--'} vnđ</Text>
+                    ),
+                },
+                {
+                    title: 'TK có 141',
+                    dataIndex: 'price',
+                    key: 'price',
+                    width: 100,
+                    render: (price) => (
+                        <Text>{formatNumberToCurrency(price) || '--'} vnđ</Text>
+                    ),
+                },
+            ]
+        },
+        {
             title: 'Thực lĩnh',
             dataIndex: 'salaryTotal',
             key: 'salaryTotal',
@@ -254,7 +278,7 @@ const Page = () => {
                                 shape="circle"
                                 icon={<PrinterOutlined className='icon-base' />}
                                 style={{ background: '#13c2c2' }}
-                                onClick={() => setIsShow(true)}
+                                onClick={() => setCurrentParoll(record)}
                             />
                         </Tooltip>
                     </Space>
@@ -269,7 +293,13 @@ const Page = () => {
                 <meta name="description" content="Tính lương - Admin" />
             </Helmet>
 
-            {isShow && <HtmlPrint isShowPrint={isShow} onHide={() => setIsShow(false)} />}
+            {currentParoll &&
+                <HtmlPrint
+                    isShowPrint={!!currentParoll}
+                    onHide={() => setCurrentParoll(null)}
+                    data={dataPayroll}
+                />
+            }
 
             <Modal
                 title={'Tính lương nhân viên'}
@@ -414,7 +444,7 @@ const Page = () => {
                                     </Space>
                                 } key="1">
                                     <TableCommon
-                                        scroll={{ x: 1800 }}
+                                        scroll={{ x: 2000 }}
                                         dataSource={_.groupBy(dataPayroll, 'date')[item] || []}
                                         loading={false}
                                         pagination={false}

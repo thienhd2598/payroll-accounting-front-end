@@ -131,7 +131,10 @@ const Page = () => {
                         type="primary"
                         className="btn-base"
                         icon={<PlusOutlined className="icon-base" />}
-                        onClick={() => setAction('create')}
+                        onClick={() => {
+                            setAction('create')
+                            setCurrentData(null);
+                        }}
                     >
                         Thêm mới
                     </Button>

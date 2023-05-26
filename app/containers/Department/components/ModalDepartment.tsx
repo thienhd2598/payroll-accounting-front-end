@@ -94,7 +94,10 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
             style={{ top: 150 }}
             width={600}
-            onCancel={onHide}
+            onCancel={() => {
+                onHide();
+                form.resetFields();
+            }}
             footer={[
                 <Space size={20}>
                     <Button
@@ -111,7 +114,10 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                         className="btn-base"
                         danger
                         disabled={loadingCreateDepartment || loadingEditDepartment}
-                        onClick={onHide}
+                        onClick={() => {
+                            onHide();
+                            form.resetFields();
+                        }}
                     >
                         Huỷ bỏ
                     </Button>

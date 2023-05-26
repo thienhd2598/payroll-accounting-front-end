@@ -94,7 +94,10 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
             style={{ top: 150 }}
             width={600}
-            onCancel={onHide}
+            onCancel={() => {
+                onHide();
+                form.resetFields();
+            }}
             footer={[
                 <Space size={20}>
                     <Button
@@ -111,7 +114,10 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                         className="btn-base"
                         danger
                         disabled={loadingCreatePosition || loadingEditPosition}
-                        onClick={onHide}
+                        onClick={() => {
+                            onHide();
+                            form.resetFields();
+                        }}
                     >
                         Huỷ bỏ
                     </Button>
