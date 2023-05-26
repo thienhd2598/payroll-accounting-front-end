@@ -8,10 +8,10 @@ import {
   SignOutResponse
 } from './Authentication.types';
 
-const signIn = async (payload: SignInParams): PromiseResponse<SignInResponse> => {
-  const response = await apiClient.post<SignInResponse>("/auth/signin", payload);  
-
-  return response.data;
+const signIn = async (payload) => {  
+  const response = await apiClient.post('/auth/signin', payload);  
+  
+  return response;
 };
 
 const signUp = async (payload: SignUpParams): PromiseResponse<SignUpResponse> => {

@@ -1,5 +1,5 @@
-import { ExclamationCircleFilled, PlusOutlined, WalletOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Form, Input, Modal, Row, Select, Skeleton, Space, Spin, Table, Typography } from 'antd';
+import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Form, Modal, Row, Select, Skeleton, Space, Table, Typography } from 'antd';
 import { createApolloClient } from 'apollo/index';
 import FilterCommon from 'components/FilterCommon';
 import TableCommon from 'components/TableCommon';
@@ -10,14 +10,16 @@ import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../../Layout/LayoutContext';
 import buildColumn from './components/AdvanceSalaryColumn';
 import StaffService from 'services/Staff/Staff.service';
-import { useQuery } from 'react-query';
-import { formatNumberToCurrency } from 'utils/helper';
+import { useMutation, useQuery } from 'react-query';
+import ModalAdvanceSalary from './components/ModalAdvanceSalary';
+import AdvanceSalaryService from 'services/AdvancedSalary/AdvanceSalary.service';
+import { showAlert } from 'utils/helper';
 
 
 const { confirm } = Modal;
 const { Column } = Table;
-const { Option } = Select;
 const { Text } = Typography;
+const { Option } = Select;
 
 const dataFilter: Array<any> = [
     {
@@ -37,17 +39,38 @@ const Page = () => {
     const { appendBreadcrumb } = useLayoutContext();
 
     const [form] = Form.useForm();
-    const [showModal, setShowModal] = useState<boolean>(false);
+    const [currentData, setCurrentData] = useState(null);
     const [action, setAction] = useState<string>('');
 
-    const { isLoading: loadingListStaff, data: dataListStaff, refetch } = useQuery(
-        'GET_LIST_STAFF',
+    const { isLoading, data, refetch } = useQuery(
+        'GET_LIST_ADVANCE_SALARY',
         async () => {
-            const response = await StaffService.getListStaff({});
+            const response = await AdvanceSalaryService.getAllAdvanceSalary();
+
+            console.log({ response })
             return response.data;
         }, {
         staleTime: 10 * (60 * 1000),
     });
+
+    const { isLoading: loadingDeleteAdvanceSalary, mutate: mutateDeleteAdvanceSalary, } = useMutation(
+        (id: string) => {
+            return AdvanceSalaryService.deleteAdvanceSalary(id);
+        }, {
+        onSuccess: (res: any) => {            
+            if (res?.statusCode === 200) {
+                showAlert.success('Xóa thông tin ứng lương thành công');
+                refetch();                
+            } else {
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
+            console.log({ res })
+        },
+        onError: (err: Error) => {
+            showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+        },
+    }
+    );    
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -56,15 +79,15 @@ const Page = () => {
                 pathname: '/',
             },
             {
-                title: 'Tạm ứng lương',
-                pathname: '/ung-luong/',
+                title: 'Quản lý thông tin ứng lương',
+                pathname: '/tham-so-luong/',
             },
         ]);
     }, []);
 
-    const showConfirmDelete = useCallback((id: number) => {
+    const showConfirmDelete = useCallback((id: string) => {
         confirm({
-            title: `Bạn có muốn xoá Ứng lương này?`,
+            title: `Bạn có muốn xoá thông tin ứng lương này?`,
             icon: <ExclamationCircleFilled />,
             style: { top: '35vh' },
             okText: 'Xoá',
@@ -79,6 +102,7 @@ const Page = () => {
                 style: { minWidth: 80 }
             },
             onOk: async () => {
+                mutateDeleteAdvanceSalary(id)
             },
             onCancel() { },
         });
@@ -86,168 +110,51 @@ const Page = () => {
 
     return (
         <React.Fragment>
-            <Helmet titleTemplate="Tạm ứng lương - Admin" defaultTitle="Tạm ứng lương - Admin">
-                <meta name="description" content="Tạm ứng lương - Admin" />
+            <Helmet titleTemplate="Quản lý thông tin ứng lương - Admin" defaultTitle="Quản lý thông tin ứng lương - Admin">
+                <meta name="description" content="Quản lý thông tin ứng lương - Admin" />
             </Helmet>
+            <ModalAdvanceSalary
+                action={action}
+                refetch={refetch}
+                currentData={currentData}
+                onHide={() => {
+                    setAction('');
+                    setCurrentData(null);
+                }}
+            />
             <Card
                 style={{ marginBottom: 20 }}
-                title="Danh sách tạm ứng lương"
+                title="Danh sách thông tin ứng lương"
                 bordered={false}
                 extra={
                     <Button
                         type="primary"
                         className="btn-base"
-                        icon={<WalletOutlined className="icon-base" />}
-                        onClick={() => setShowModal(true)}
+                        icon={<PlusOutlined className="icon-base" />}
+                        onClick={() => {
+                            setAction('create');
+                            setCurrentData(null);
+                        }}
                     >
-                        Ứng lương nhân viên
+                        Thêm mới
                     </Button>
                 }
             >
-                <Space className='space-base' direction="vertical" size={30}>
+                <Space className='space-base' direction="vertical" size={30}>                    
                     <TableCommon
-                        dataSource={[
-                            { id: 1, name: 'Ứng lương tháng 1 - 2023', staff: 'Nguyễn Khánh Thiện', price: 1500000, note: 'Ứng lương chi tiêu' },
-                            { id: 1, name: 'Ứng lương tháng 1 - 2023', staff: 'Nguyễn Thị Ánh Lê', price: 1500000, note: 'Ứng lương chi tiêu' },
-                            { id: 1, name: 'Ứng lương tháng 1 - 2023', staff: 'Trần Phương Linh', price: 1500000, note: 'Ứng lương chi tiêu' },
-                            { id: 1, name: 'Ứng lương tháng 1 - 2023', staff: 'Nguyễn Thị Ánh Lê', price: 1500000, note: 'Ứng lương chi tiêu' },
-                            { id: 1, name: 'Ứng lương tháng 1 - 2023', staff: 'Lò Thị Trang', price: 1500000, note: 'Ứng lương chi tiêu' },
-                        ]}
-                        loading={false}
+                        dataSource={data?.advanceSalarys || []}
+                        loading={isLoading || loadingDeleteAdvanceSalary}
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
-                        columns={buildColumn({ showConfirmDelete })}
+                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
+                            setCurrentData(data);
+                            setAction('edit')
+                        } })}
                         onChangePagination={() => { }}
                     />
                 </Space>
             </Card>
-
-            <Modal
-                title="Tạo phiếu ứng lương"
-                open={showModal}
-                keyboard={true}
-                bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-                style={{ top: 150 }}
-                width={500}
-                onCancel={() => setShowModal(false)}
-                footer={[
-                    <Space size={20}>
-                        <Button
-                            type="primary"
-                            className="btn-base"
-                            loading={false}
-                            onClick={() => { }}
-                            style={{ background: '#1677ff' }}
-                        >
-                            Xác nhận
-                        </Button>
-                        <Button
-                            type="primary"
-                            className="btn-base"
-                            danger
-                            disabled={false}
-                            onClick={() => setShowModal(false)}
-                        >
-                            Huỷ bỏ
-                        </Button>
-                    </Space>
-                ]}
-            >
-                <Spin spinning={false}>
-                    <Form
-                        form={form}
-                        name="basic"
-                        style={{ marginTop: 20 }}
-                        layout="vertical"
-                        initialValues={{ remember: true }}
-                    >
-                        <Row gutter={20}>
-                            <Col span={24}>
-                                <Form.Item
-                                    name="name"
-                                    label="Nhân viên"
-                                    rules={[
-                                        { required: true, message: 'Nhân viên không được để trống!' },
-                                    ]}
-                                >
-                                    <Select
-                                        className="input-item"
-                                        placeholder="Chọn nhân viên"
-                                        allowClear
-                                    >
-                                        {[
-                                            { id: 1, name: 'Nguyễn Khánh Thiện' },
-                                            { id: 2, name: 'Trần Phương Linh' },
-                                            { id: 3, name: 'Lê Thị Ánh' },
-                                            { id: 4, name: 'Lò Văn Mạnh' },
-                                        ]?.map((_document: any, index: number) => (
-                                            <Option value={_document.id} key={`document-change-status-${index}`}>
-                                                {_document?.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item
-                                    name="name"
-                                    label="Tên mẫu ứng lương"
-                                    rules={[
-                                        { required: true, message: 'Tên mẫu ứng lương không được để trống!' },
-                                    ]}
-                                >
-                                    <Input
-                                        className="input-item"
-                                        placeholder="Tên mẫu ứng lương"
-                                        allowClear
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item>
-                                    <Text>Tài khoản nợ: <strong>334</strong></Text>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item>
-                                    <Text>Tài khoản có: <strong>141</strong></Text>
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item
-                                    name="price"
-                                    label="Số tiền tạm ứng"
-                                    rules={[
-                                        { required: true, message: 'Số tiền tạm ứng không được để trống!' },
-                                    ]}
-                                >
-                                    <Input
-                                        className="input-item"
-                                        placeholder="Số tiền tạm ứng"
-                                        allowClear
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item
-                                    name="note"
-                                    label="Diễn giải"
-                                    rules={[
-                                        { required: true, message: 'Diễn giải không được để trống!' },
-                                    ]}
-                                >
-                                    <Input
-                                        className="input-item"
-                                        placeholder="Diễn giải"
-                                        allowClear
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form>
-                </Spin>
-            </Modal>
         </React.Fragment>
     );
 };

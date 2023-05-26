@@ -7,12 +7,12 @@ import { formatNumberToCurrency } from 'utils/helper';
 const { Text, Link } = Typography;
 
 interface IColumnProps {
-    showConfirmDelete: (id: number) => void;
+    showConfirmDelete: (id: string) => void;
     onEdit?: () => void;
     setCurrentData?: any
 }
 
-const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
+const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
     return [
         {
             title: 'STT',
@@ -22,7 +22,7 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             render: (id: number, row, index: number) => (
                 <Text>{index + 1}</Text>
             )
-        },        
+        },
         {
             title: 'Tên mẫu ứng lương',
             dataIndex: 'name',
@@ -36,7 +36,7 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             dataIndex: 'staff',
             key: 'staff',
             render: (staff) => (
-                <Text>{staff || '--'}</Text>
+                <Text>{staff?.name || '--'}</Text>
             )
         },
         {
@@ -57,15 +57,15 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             render: (price) => (
                 <Text>{formatNumberToCurrency(price)} vnđ</Text>
             )
-        },        
+        },
         {
-            title: 'Diễn giải',
+            title: 'Lý do',
             dataIndex: 'note',
             key: 'note',
             render: (note: string) => (
                 <Text>{note || '--'}</Text>
             )
-        },        
+        },
         {
             title: 'Thao tác',
             dataIndex: 'action',
@@ -76,11 +76,26 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             render: (_, record: any) => {
                 return (
                     <Space direction="horizontal" size={15}>
-                        <Button
-                            type='primary'
-                        >
-                            Cập nhật
-                        </Button>
+                        <Tooltip placement='top' title="Cập nhật">
+                            <Button
+                                type='primary'
+                                shape="circle"
+                                size="middle"
+                                style={{ background: '#1677ff', borderColor: '#1677ff' }}
+                                icon={<ToolOutlined className='icon-base' />}
+                                onClick={() => setCurrentData(record)}
+                            />
+                        </Tooltip>
+                        <Tooltip placement="top" title="Xoá">
+                            <Button
+                                size="middle"
+                                type="primary"
+                                shape="circle"
+                                icon={<DeleteOutlined className='icon-base' />}
+                                danger
+                                onClick={() => showConfirmDelete(record?.id)}
+                            />
+                        </Tooltip>
                     </Space>
                 );
             },

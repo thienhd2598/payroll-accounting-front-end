@@ -2,24 +2,24 @@ import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Radio, Row, Spa
 import React, { memo, useCallback, useMemo } from "react";
 import { showAlert } from 'utils/helper';
 import { useMutation } from 'react-query';
-import PositionService from "services/Position/Position.service";
+import IncomeTaxService from "services/IncomeTax/IncomeTax.service";
 
-interface IModalPosition {
+interface IModalIncomeTax {
     action: string,
     onHide: () => void,
     currentData: any,
     refetch: any
 }
 
-const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition) => {
+const ModalIncomeTax = ({ action, onHide, currentData, refetch }: IModalIncomeTax) => {
     const [form] = Form.useForm();
-    const { isLoading: loadingCreatePosition, mutate: mutateCreatePosition, } = useMutation(
+    const { isLoading: loadingCreateIncomeTax, mutate: mutateCreateIncomeTax, } = useMutation(
         (params: any) => {
-            return PositionService.createPosition(params);
+            return IncomeTaxService.createIncomeTax(params);
         }, {
         onSuccess: (res: any) => {
             if (res.statusCode === 200) {
-                showAlert.success('Tạo chức vụ thành công');
+                showAlert.success('Tạo cấp bậc thuế thành công');
                 refetch();
                 onHide();
             } else {
@@ -32,13 +32,13 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
     }
     );
 
-    const { isLoading: loadingEditPosition, mutate: mutateEditPosition, } = useMutation(
+    const { isLoading: loadingEditIncomeTax, mutate: mutateEditIncomeTax, } = useMutation(
         (params: any) => {
-            return PositionService.updatePosition(params);
+            return IncomeTaxService.updateIncomeTax(params);
         }, {
         onSuccess: (res: any) => {
             if (res.statusCode === 200) {
-                showAlert.success('Cập nhật chức vụ thành công');
+                showAlert.success('Cập nhật cấp bậc thuế thành công');
                 refetch();
                 onHide();
             } else {
@@ -59,9 +59,9 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                 return;
             };
 
-            const { name, allowance } = currentData || {};
+            const { name, rate } = currentData || {};
             form.setFieldsValue({
-                name, allowance
+                name, rate
             });
         }, [currentData]
     );
@@ -72,11 +72,12 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                 form.validateFields()
                     .then(async values => {
                         if (action == 'create') {
-                            mutateCreatePosition({ ...values });
+                            mutateCreateIncomeTax({ ...values, rate: String(values?.rate) });
                         } else {
-                            mutateEditPosition({
+                            mutateEditIncomeTax({
                                 id: currentData?.id,
-                                ...values
+                                ...values,
+                                rate: String(values?.rate)
                             })
                         }
                     })
@@ -88,7 +89,7 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
 
     return (
         <Modal
-            title={action === 'create' ? 'Tạo mới chức vụ' : 'Cập nhật thông tin chức vụ'}
+            title={action === 'create' ? 'Tạo mới cấp bậc thuế' : 'Cập nhật thông tin cấp bậc thuế'}
             open={!!action}
             keyboard={true}
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
@@ -100,7 +101,7 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                     <Button
                         type="primary"
                         className="btn-base"
-                        loading={loadingCreatePosition || loadingEditPosition}
+                        loading={loadingCreateIncomeTax || loadingEditIncomeTax}
                         onClick={onConfirm}
                         style={{ background: '#1677ff' }}
                     >
@@ -110,7 +111,7 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                         type="primary"
                         className="btn-base"
                         danger
-                        disabled={loadingCreatePosition || loadingEditPosition}
+                        disabled={loadingCreateIncomeTax || loadingEditIncomeTax}
                         onClick={onHide}
                     >
                         Huỷ bỏ
@@ -118,7 +119,7 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                 </Space>,
             ]}
         >
-            <Spin spinning={loadingCreatePosition || loadingEditPosition}>
+            <Spin spinning={loadingCreateIncomeTax || loadingEditIncomeTax}>
                 <Form
                     form={form}
                     name="basic"
@@ -130,33 +131,33 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
                         <Col span={24}>
                             <Form.Item
                                 name="name"
-                                label="Tên chức vụ"
+                                label="Tên cấp bậc thuế"
                                 rules={[
-                                    { required: true, message: 'Tên chức vụ không được để trống!' },
+                                    { required: true, message: 'Tên cấp bậc thuế không được để trống!' },
                                 ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Nhập tên chức vụ"
+                                    placeholder="Nhập tên cấp bậc thuế"
                                     allowClear
                                 />
                             </Form.Item>
                         </Col>
                         <Col span={24}>
                             <Form.Item
-                                name="allowance"
-                                label="Phụ cấp chức vụ"
+                                name="rate"
+                                label="Thuế suất"
                                 rules={[
-                                    { required: true, message: 'Phụ cấp chức vụ không được để trống!' },
+                                    { required: true, message: 'Thuế suất không được để trống!' },
                                 ]}
                             >
                                 <InputNumber
                                     className="input-item"
-                                    placeholder="Phụ cấp chức vụ"
+                                    placeholder="Thuế suất"
                                     style={{ width: '100%' }}
                                     min={0}
                                     formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    parser={(value: any) => value.replace(/\$\s?|(,*)/g, '')}                                    
+                                    parser={(value: any) => value.replace(/\$\s?|(,*)/g, '')}
                                     onKeyPress={evt => {
                                         var iKeyCode = evt.which ? evt.which : evt.keyCode;
                                         return (
@@ -178,4 +179,4 @@ const ModalPosition = ({ action, onHide, currentData, refetch }: IModalPosition)
     )
 };
 
-export default memo(ModalPosition);
+export default memo(ModalIncomeTax);

@@ -45,8 +45,8 @@ function App() {
         <Switch>
           <AnonymousRoute exact path="/login" component={Login} />
           <AnonymousRoute exact path="/register" component={Register} />
-          <AnonymousRoute path="/" component={Layout} />          
-          {/* <UserRoute path="/" component={Layout} />           */}
+          {/* <AnonymousRoute path="/" component={Layout} />           */}
+          <UserRoute path="/" component={Layout} />          
           <Route component={NotFoundPage} />
         </Switch>
       )}

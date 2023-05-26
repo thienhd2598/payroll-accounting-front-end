@@ -1,5 +1,5 @@
 import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Modal, Row, Skeleton, Space, Table, Typography } from 'antd';
+import { Button, Card, Form, Modal, Row, Select, Skeleton, Space, Table, Typography } from 'antd';
 import { createApolloClient } from 'apollo/index';
 import FilterCommon from 'components/FilterCommon';
 import TableCommon from 'components/TableCommon';
@@ -8,15 +8,18 @@ import React, {
 } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../../Layout/LayoutContext';
-import buildColumn from './components/SalaryColumn';
+import buildColumn from './components/SalaryInformationColumn';
 import StaffService from 'services/Staff/Staff.service';
-import { useQuery } from 'react-query';
-import { formatNumberToCurrency } from 'utils/helper';
+import { useMutation, useQuery } from 'react-query';
+import ModalSalaryInformation from './components/ModalSalaryInformation';
+import SalaryInformationService from 'services/SalaryInformation/SalaryInformation.service';
+import { showAlert } from 'utils/helper';
 
 
 const { confirm } = Modal;
 const { Column } = Table;
 const { Text } = Typography;
+const { Option } = Select;
 
 const dataFilter: Array<any> = [
     {
@@ -36,16 +39,38 @@ const Page = () => {
     const { appendBreadcrumb } = useLayoutContext();
 
     const [form] = Form.useForm();
+    const [currentData, setCurrentData] = useState(null);
     const [action, setAction] = useState<string>('');
 
-    const { isLoading: loadingListStaff, data: dataListStaff, refetch } = useQuery(
-        'GET_LIST_STAFF',
+    const { isLoading, data, refetch } = useQuery(
+        'GET_LIST_SALARY_INFORMATION',
         async () => {
-            const response = await StaffService.getListStaff({});            
+            const response = await SalaryInformationService.getAllSalaryInformation();
+
+            console.log({ response })
             return response.data;
         }, {
         staleTime: 10 * (60 * 1000),
     });
+
+    const { isLoading: loadingDeleteSalaryInformation, mutate: mutateDeleteSalaryInformation, } = useMutation(
+        (id: string) => {
+            return SalaryInformationService.deleteSalaryInformation(id);
+        }, {
+        onSuccess: (res: any) => {            
+            if (res?.statusCode === 200) {
+                showAlert.success('Xóa tham số lương thành công');
+                refetch();                
+            } else {
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
+            console.log({ res })
+        },
+        onError: (err: Error) => {
+            showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+        },
+    }
+    );    
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -54,13 +79,13 @@ const Page = () => {
                 pathname: '/',
             },
             {
-                title: 'Tham số lương',
-                pathname: '/quan-ly-phong-ban/',
+                title: 'Quản lý tham số lương',
+                pathname: '/tham-so-luong/',
             },
         ]);
     }, []);
 
-    const showConfirmDelete = useCallback((id: number) => {
+    const showConfirmDelete = useCallback((id: string) => {
         confirm({
             title: `Bạn có muốn xoá tham số lương này?`,
             icon: <ExclamationCircleFilled />,
@@ -77,6 +102,7 @@ const Page = () => {
                 style: { minWidth: 80 }
             },
             onOk: async () => {
+                mutateDeleteSalaryInformation(id)
             },
             onCancel() { },
         });
@@ -84,37 +110,47 @@ const Page = () => {
 
     return (
         <React.Fragment>
-            <Helmet titleTemplate="Tham số lương - Admin" defaultTitle="Tham số lương - Admin">
-                <meta name="description" content="Tham số lương - Admin" />
-            </Helmet>            
+            <Helmet titleTemplate="Quản lý tham số lương - Admin" defaultTitle="Quản lý tham số lương - Admin">
+                <meta name="description" content="Quản lý tham số lương - Admin" />
+            </Helmet>
+            <ModalSalaryInformation
+                action={action}
+                refetch={refetch}
+                currentData={currentData}
+                onHide={() => {
+                    setAction('');
+                    setCurrentData(null);
+                }}
+            />
             <Card
                 style={{ marginBottom: 20 }}
                 title="Danh sách tham số lương"
-                bordered={false}                
+                bordered={false}
+                extra={
+                    <Button
+                        type="primary"
+                        className="btn-base"
+                        icon={<PlusOutlined className="icon-base" />}
+                        onClick={() => {
+                            setAction('create');
+                            setCurrentData(null);
+                        }}
+                    >
+                        Thêm mới
+                    </Button>
+                }
             >
-                <Space className='space-base' direction="vertical" size={30}>
-                    {/* <FilterCommon
-                        form={form}
-                        loading={false}
-                        dataFilter={dataFilter}
-                        onSearch={() => { }}
-                        onReSearch={() => { }}
-                    /> */}
+                <Space className='space-base' direction="vertical" size={30}>                    
                     <TableCommon
-                        dataSource={[
-                            { id: 1, name: 'Nguyễn Khánh Thiện', b1: 18000000, b2: 22, b3: 8, b4: 0.08, b5: 0.015, b6: 0.01 },
-                            { id: 2, name: 'Nguyễn Thị Ánh Lê', b1: 9500000, b2: 22, b3: 8, b4: 0.04, b5: 0.02, b6: 0.01 },
-                            { id: 3, name: 'Trần Phương Linh', b1: 6500000, b2: 22, b3: 8, b4: 0.04, b5: 0.02, b6: 0.01 },
-                            { id: 4, name: 'Đinh Công Mạnh', b1: 12000000, b2: 22, b3: 8, b4: 0.06, b5: 0.015, b6: 0.01 },
-                            { id: 5, name: 'Lò Thị Trang', b1: 11500000, b2: 22, b3: 8, b4: 0.06, b5: 0.02, b6: 0.01 },
-                            { id: 6, name: 'Phạm Đức Anh Tuấn', b1: 10000000, b2: 22, b3: 8, b4: 0.06, b5: 0.015, b6: 0.01 },
-                        ]}
-                        scroll={{ x: 1550 }}
-                        loading={false}
+                        dataSource={data?.salaryInformations || []}
+                        loading={isLoading || loadingDeleteSalaryInformation}
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
-                        columns={buildColumn({ showConfirmDelete })}
+                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
+                            setCurrentData(data);
+                            setAction('edit')
+                        } })}
                         onChangePagination={() => { }}
                     />
                 </Space>

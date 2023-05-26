@@ -1,9 +1,8 @@
-import { Button, Checkbox, Col, Form, Input, Modal, Radio, Row, Space, Spin } from "antd";
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Radio, Row, Space, Spin } from "antd";
 import React, { memo, useCallback, useMemo } from "react";
-import CompanyService from 'services/Company/Company.service';
-import { CreateCompanyRequest, UpdateCompanyRequest } from 'services/Company/Company.types';
 import { showAlert } from 'utils/helper';
 import { useMutation } from 'react-query';
+import DepartmentService from "services/Department/Department.service";
 
 interface IModalDepartment {
     action: string,
@@ -14,18 +13,18 @@ interface IModalDepartment {
 
 const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartment) => {
     const [form] = Form.useForm();
-    const { isLoading: loadingCreateCompany, mutate: mutateCreateCompany, } = useMutation(
-        (params: CreateCompanyRequest) => {
-            return CompanyService.createCompany(params);
+    const { isLoading: loadingCreateDepartment, mutate: mutateCreateDepartment, } = useMutation(
+        (params: any) => {
+            return DepartmentService.createDepartment(params);
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
-                showAlert.success('Tạo chức vụ thành công');
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
+                showAlert.success('Tạo phòng ban thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
-            }            
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
         },
         onError: (err: Error) => {
             showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
@@ -33,17 +32,17 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
     }
     );
 
-    const { isLoading: loadingEditCompany, mutate: mutateEditCompany, } = useMutation(
-        (params: UpdateCompanyRequest) => {
-            return CompanyService.updateCompany(params);
+    const { isLoading: loadingEditDepartment, mutate: mutateEditDepartment, } = useMutation(
+        (params: any) => {
+            return DepartmentService.updateDepartment(params);
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
-                showAlert.success('Cập nhật chức vụ thành công');                
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
+                showAlert.success('Cập nhật phòng ban thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
             console.log({ res })
         },
@@ -60,9 +59,9 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                 return;
             };
 
-            const { name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description } = currentData || {};
+            const { name, phone } = currentData || {};
             form.setFieldsValue({
-                name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description
+                name, phone
             });
         }, [currentData]
     );
@@ -73,9 +72,9 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                 form.validateFields()
                     .then(async values => {
                         if (action == 'create') {
-                            mutateCreateCompany({ ...values });
+                            mutateCreateDepartment({ ...values });
                         } else {
-                            mutateEditCompany({
+                            mutateEditDepartment({
                                 id: currentData?.id,
                                 ...values
                             })
@@ -89,19 +88,19 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
 
     return (
         <Modal
-            title={action === 'create' ? 'Tạo mới chức vụ' : 'Cập nhật thông tin chức vụ'}
+            title={action === 'create' ? 'Tạo mới phòng ban' : 'Cập nhật thông tin phòng ban'}
             open={!!action}
             keyboard={true}
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            style={{ top: 50 }}
-            width={800}
+            style={{ top: 150 }}
+            width={600}
             onCancel={onHide}
             footer={[
                 <Space size={20}>
                     <Button
                         type="primary"
                         className="btn-base"
-                        loading={loadingCreateCompany || loadingEditCompany}
+                        loading={loadingCreateDepartment || loadingEditDepartment}
                         onClick={onConfirm}
                         style={{ background: '#1677ff' }}
                     >
@@ -111,7 +110,7 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                         type="primary"
                         className="btn-base"
                         danger
-                        disabled={loadingCreateCompany || loadingEditCompany}
+                        disabled={loadingCreateDepartment || loadingEditDepartment}
                         onClick={onHide}
                     >
                         Huỷ bỏ
@@ -119,7 +118,7 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                 </Space>,
             ]}
         >
-            <Spin spinning={loadingCreateCompany || loadingEditCompany}>
+            <Spin spinning={loadingCreateDepartment || loadingEditDepartment}>
                 <Form
                     form={form}
                     name="basic"
@@ -128,143 +127,32 @@ const ModalDepartment = ({ action, onHide, currentData, refetch }: IModalDepartm
                     initialValues={{ remember: true }}
                 >
                     <Row gutter={20}>
-                        <Col span={12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="name"
-                                label="Tên công ty"
+                                label="Tên phòng ban"
                                 rules={[
-                                    { required: true, message: 'Tên công ty không được để trống!' },
+                                    { required: true, message: 'Tên phòng ban không được để trống!' },
                                 ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Tên công ty"
+                                    placeholder="Nhập tên phòng ban"
                                     allowClear
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="tax_code"
-                                label="Mã số thuế"
-                                rules={[
-                                    { required: true, message: 'Mã số thuế không được để trống!' },
-                                ]}
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Mã số thuế"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="deputy"
-                                label="Người đại diện pháp luật"
-                                rules={[
-                                    { required: true, message: 'Người đại diện pháp luật không được để trống!' },
-                                ]}
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Người đại diện pháp luật"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="position"
-                                label="Chức vụ"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Chức vụ"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="address"
-                                label="Địa chỉ"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Địa chỉ"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="phone"
                                 label="Số điện thoại"
+                                rules={[
+                                    { required: true, message: 'Số điện thoại không được để trống!' },
+                                ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Số điện thoại"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="telephone"
-                                label="Di động"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Di động"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="fax"
-                                label="Fax"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Fax"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="account_number"
-                                label="Tài khoản số"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Tài khoản số"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="bank"
-                                label="Ngân hàng"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Ngân hàng"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="description"
-                                label="Mô tả"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Mô tả"
+                                    placeholder="Nhập số điện thoại"
                                     allowClear
                                 />
                             </Form.Item>

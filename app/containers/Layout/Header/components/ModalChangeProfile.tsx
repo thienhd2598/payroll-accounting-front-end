@@ -34,11 +34,11 @@ const GENDER = [
 const ModalChangeProfile = ({ show, onHide }: IModalChangeProfile) => {
     const [form] = Form.useForm();
 
-    const { isLoading: loadingGetProfile, data: dataProfile } = useQuery('GET_PROFILE', async () => {
-        let response = await UserService.getProfile();
+    // const { isLoading: loadingGetProfile, data: dataProfile } = useQuery('GET_PROFILE', async () => {
+    //     let response = await UserService.getProfile();
 
-        return response.data;
-    }) as IProfileQuery;
+    //     return response.data;
+    // }) as IProfileQuery;
 
     const { isLoading: loadingUpdateProfile, mutate: mutateUpdateProfile } = useMutation(
         ({ name, phone, gender, address }: UpdateProfileParams) => {
@@ -59,21 +59,21 @@ const ModalChangeProfile = ({ show, onHide }: IModalChangeProfile) => {
     }
     );
 
-    useMemo(
-        () => {
-            if (!!dataProfile && Object.keys(dataProfile).length > 0) {
-                const { email, name, phone, gender, address } = dataProfile;
+    // useMemo(
+    //     () => {
+    //         if (!!dataProfile && Object.keys(dataProfile).length > 0) {
+    //             const { email, name, phone, gender, address } = dataProfile;
 
-                form.setFieldsValue({
-                    email,
-                    phone,
-                    name,
-                    address,
-                    gender: Number(gender),
-                });
-            }
-        }, [dataProfile]
-    );
+    //             form.setFieldsValue({
+    //                 email,
+    //                 phone,
+    //                 name,
+    //                 address,
+    //                 gender: Number(gender),
+    //             });
+    //         }
+    //     }, [dataProfile]
+    // );
 
     const onUpdateProfile = useCallback(
         () => {
@@ -104,7 +104,7 @@ const ModalChangeProfile = ({ show, onHide }: IModalChangeProfile) => {
                     <Button
                         type="primary"
                         className="btn-base"
-                        loading={loadingGetProfile || loadingUpdateProfile}
+                        loading={loadingUpdateProfile}
                         onClick={onUpdateProfile}
                     >
                         Xác nhận
@@ -120,7 +120,7 @@ const ModalChangeProfile = ({ show, onHide }: IModalChangeProfile) => {
                 </Space>,
             ]}
         >
-            <Spin spinning={loadingGetProfile || loadingUpdateProfile}>
+            <Spin spinning={loadingUpdateProfile}>
                 <Form
                     form={form}
                     name="basic"

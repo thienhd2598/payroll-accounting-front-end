@@ -2,7 +2,8 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   MailOutlined,
-  SettingOutlined
+  SettingOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import {
   Button,
@@ -30,24 +31,22 @@ const Login = () => {
   const [form] = Form.useForm();
 
   const { isLoading: loadingSignIn, mutate: mutateSignIn } = useMutation(
-    ({ email, password }: SignInParams) => {
-      return AuthenService.signIn({ email, password });
+    ({ username, password }: any) => {      
+      return AuthenService.signIn({ username, password });
     }, {
-    onSuccess: (res) => {
-      if (res.status === 200) {
+    onSuccess: (res: any) => {      
+      if (!!res) {
         showAlert.success('Đăng nhập thành công')
-        localStorage.setItem('jwt-token-admin', res?.data?.access_token);
-        localStorage.setItem(
-          'info_admin',
-          JSON.stringify(res?.data?.data || ''),
-        );
+        localStorage.setItem('jwt-token', res?.access_token);
+        localStorage.setItem('role', res?.user?.role);
         history.push('/');
       } else {
-        showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+        showAlert.error('Tài khoản/mật khẩu không đúng, xin vui lòng thử lại')
       }
     },
     onError: (err: Error) => {
-      showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+      console.log({ err })
+      showAlert.error('Tài khoản/mật khẩu không đúng, xin vui lòng thử lại')
     },
   }
   );
@@ -82,24 +81,20 @@ const Login = () => {
                 layout="vertical"
               >
                 <Form.Item
-                  name="email"
-                  label="Email"
+                  name="username"
+                  label="Tên đăng nhập"
                   rules={[
                     {
-                      type: 'email',
-                      message: 'Email sai định dạng!',
-                    },
-                    {
                       required: true,
-                      message: 'Email không được để trống!',
+                      message: 'Tên đăng nhập không được để trống!',
                     },
                   ]}
                 >
                   <Input
                     className="input-item"
-                    placeholder="Email"
+                    placeholder="Tên đăng nhập"
                     size="large"
-                    prefix={<MailOutlined style={{ marginRight: 4 }} />}
+                    prefix={<UserOutlined style={{ marginRight: 4 }} />}
                     allowClear
                   />
                 </Form.Item>

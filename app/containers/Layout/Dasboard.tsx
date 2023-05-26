@@ -26,6 +26,8 @@ interface DashboardProps {
 const Dashboard = ({ children }: DashboardProps) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
+  const role = localStorage.getItem('role');
+
   return (
     <LayoutProvider>
       <LayoutWrapper>
@@ -87,11 +89,9 @@ const Dashboard = ({ children }: DashboardProps) => {
                 <Tag
                   style={{ marginLeft: 20 }}
                   icon={<UserOutlined />}
-                  color="#f5222d"
-                  // color="#13c2c2"
+                  color={role == 'admin' ? "#f5222d" : "#13c2c2"}                
                 >
-                  {/* Người dùng: Nhân viên hành chính nhân sự */}
-                  Người dùng: Nhân viên kế toán
+                  {role == 'admin' ? 'Người dùng: Nhân viên kế toán' : 'Người dùng: Nhân viên hành chính nhân sự'}                  
                 </Tag>
               </div>
               <div

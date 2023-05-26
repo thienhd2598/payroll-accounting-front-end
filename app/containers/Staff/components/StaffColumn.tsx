@@ -7,16 +7,16 @@ import { formatNumberToCurrency } from 'utils/helper';
 const { Text, Link } = Typography;
 
 interface IColumnProps {
-    showConfirmDelete: (id: number) => void;
+    showConfirmDelete: (id: string) => void;
     onEdit?: () => void;
     setCurrentData?: any
 }
 
-const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
+const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
     return [
         {
             title: 'STT',
-            dataIndex: 'id',
+            dataIndex: 'id',            
             key: 'id',
             render: (id: number, row, index: number) => (
                 <Text>{index + 1}</Text>
@@ -29,21 +29,13 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             render: (name) => (
                 <Text>{name || '--'}</Text>
             )
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-            render: (email) => (
-                <Text>{email || '--'}</Text>
-            )
-        },
+        },        
         {
             title: 'Phòng ban',
             dataIndex: 'department',
             key: 'department',
             render: (department) => (
-                <Text>{department || '--'}</Text>
+                <Text>{department?.name || '--'}</Text>
             )
         },
         {
@@ -51,26 +43,40 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             dataIndex: 'position',
             key: 'position',
             render: (position) => (
-                <Text>{position || '--'}</Text>
+                <Text>{position?.name || '--'}</Text>
             )
         },
         {
-            title: 'SĐT',
+            title: 'Cấp bậc thuế',
+            dataIndex: 'income_tax',
+            key: 'income_tax',
+            render: (income_tax) => (
+                <Text>{income_tax?.name || '--'}</Text>
+            )
+        },  
+        {
+            title: 'Số điện thoại',
             dataIndex: 'phone',
             key: 'phone',
             render: (phone) => (
                 <Text>{phone || '--'}</Text>
             )
-        },
+        },      
         {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: string) => {
+            title: 'Ngày sinh',
+            dataIndex: 'birthday',
+            key: 'birthday',
+            render: (birthday) => (
+                <Text>{dayjs(birthday).format('DD-MM-YYYY') || '--'}</Text>
+            )
+        },      
+        {
+            title: 'Mã số thuế',
+            dataIndex: 'tax_code',
+            key: 'tax_code',
+            render: (tax_code: string) => {
                 return (
-                    <Tag color={status == '1' ? 'green' : 'red'}>
-                        {status == '1' ? 'Kích hoạt' : 'Chưa kích hoạt'}
-                    </Tag>
+                    <Text>{tax_code || '--'}</Text>
                 )
             }
         },
@@ -89,10 +95,9 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
                                 type='primary'
                                 shape="circle"
                                 size="middle"
-                                style={{ background: '#ff5629', borderColor: '#ff5629' }}
+                                style={{ background: '#1677ff', borderColor: '#1677ff' }}
                                 icon={<ToolOutlined className='icon-base' />}
-                                onClick={() => {
-                                }}
+                                onClick={() => setCurrentData(record)}
                             />
                         </Tooltip>
                         <Tooltip placement="top" title="Xoá">

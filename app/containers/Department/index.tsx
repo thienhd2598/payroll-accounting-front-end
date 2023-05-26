@@ -10,8 +10,10 @@ import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../Layout/LayoutContext';
 import buildColumn from './components/DepartmentColumn';
 import StaffService from 'services/Staff/Staff.service';
-import { useQuery } from 'react-query';
-import ModalStaff from './components/ModalDepartment';
+import { useMutation, useQuery } from 'react-query';
+import ModalDepartment from './components/ModalDepartment';
+import DepartmentService from 'services/Department/Department.service';
+import { showAlert } from 'utils/helper';
 
 
 const { confirm } = Modal;
@@ -36,17 +38,39 @@ const Page = () => {
     const { appendBreadcrumb } = useLayoutContext();
 
     const [form] = Form.useForm();
+    const [currentData, setCurrentData] = useState(null);
     const [action, setAction] = useState<string>('');
 
-    const { isLoading: loadingListStaff, data: dataListStaff, refetch } = useQuery(
-        'GET_LIST_STAFF',
+    const { isLoading, data, refetch } = useQuery(
+        'GET_LIST_DEPARTMENT',
         async () => {
-            const response = await StaffService.getListStaff({});
+            const response = await DepartmentService.getAllDepartment();
 
             return response.data;
         }, {
         staleTime: 10 * (60 * 1000),
     });
+
+    const { isLoading: loadingDeleteDepartment, mutate: mutateDeleteDepartment, } = useMutation(
+        (id: string) => {
+            return DepartmentService.deleteDepartment(id);
+        }, {
+        onSuccess: (res: any) => {            
+            if (res?.statusCode === 200) {
+                showAlert.success('Xóa phòng ban thành công');
+                refetch();                
+            } else {
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
+            console.log({ res })
+        },
+        onError: (err: Error) => {
+            showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+        },
+    }
+    );
+
+    console.log({ data });
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -61,7 +85,7 @@ const Page = () => {
         ]);
     }, []);
 
-    const showConfirmDelete = useCallback((id: number) => {
+    const showConfirmDelete = useCallback((id: string) => {
         confirm({
             title: `Bạn có muốn xoá phòng ban này?`,
             icon: <ExclamationCircleFilled />,
@@ -78,6 +102,7 @@ const Page = () => {
                 style: { minWidth: 80 }
             },
             onOk: async () => {
+                mutateDeleteDepartment(id)
             },
             onCancel() { },
         });
@@ -88,11 +113,14 @@ const Page = () => {
             <Helmet titleTemplate="Quản lý phòng ban - Admin" defaultTitle="Quản lý phòng ban - Admin">
                 <meta name="description" content="Quản lý phòng ban - Admin" />
             </Helmet>
-            <ModalStaff
+            <ModalDepartment
                 action={action}
                 refetch={refetch}
-                currentData={null}
-                onHide={() => setAction('')}
+                currentData={currentData}
+                onHide={() => {
+                    setAction('');
+                    setCurrentData(null);
+                }}
             />
             <Card
                 style={{ marginBottom: 20 }}
@@ -118,22 +146,15 @@ const Page = () => {
                         onReSearch={() => { }}
                     /> */}
                     <TableCommon
-                        dataSource={[
-                            { id: 1, name: 'Công nghệ', phone: '0356924848', status: 1 },
-                            { id: 2, name: 'Vận hành', phone: '0356924848', status: 1 },
-                            { id: 3, name: 'Kế toán', phone: '0356924848', status: 1 },
-                            { id: 4, name: 'Grow 1', phone: '0356924848', status: 1 },
-                            { id: 5, name: 'Grow 2', phone: '0356924848', status: 0 },
-                            { id: 6, name: 'Grow 3', phone: '0356924848', status: 1 },
-                            { id: 7, name: 'Hành chính nhân sự', phone: '0356924848', status: 0 },
-                            { id: 8, name: 'Media', phone: '0356924848', status: 1 },
-                            { id: 9, name: 'Marketing', phone: '0356924848', status: 1 },
-                        ]}
-                        loading={false}
+                        dataSource={data?.departments || []}
+                        loading={isLoading || loadingDeleteDepartment}
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
-                        columns={buildColumn({ showConfirmDelete })}
+                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
+                            setCurrentData(data);
+                            setAction('edit')
+                        } })}
                         onChangePagination={() => { }}
                     />
                 </Space>

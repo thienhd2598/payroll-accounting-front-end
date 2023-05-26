@@ -26,7 +26,7 @@ const MenuHeaderDropdown = ({ onChangePass, onChangeProfile }: { onChangePass: (
         onSuccess: (res) => {
             console.log({ res });
             if (res.status === 200) {
-                localStorage.removeItem('jwt-token-admin');
+                localStorage.removeItem('jwt-token');
                 localStorage.removeItem('info_admin');
                 history.push('/login');
             } else {
@@ -54,7 +54,11 @@ const MenuHeaderDropdown = ({ onChangePass, onChangeProfile }: { onChangePass: (
                 <Menu.Item
                     key="logout"
                     style={{ color: 'red', height: 40 }}
-                    onClick={() => mutateSignOut()}
+                    onClick={() => {
+                        localStorage.removeItem('jwt-token');
+                        localStorage.removeItem('role');
+                        history.push('/login')
+                    }}
                 >
                     <LogoutOutlined style={{ marginRight: 15 }} />
                     Đăng xuất

@@ -7,12 +7,12 @@ import { formatNumberToCurrency } from 'utils/helper';
 const { Text, Link } = Typography;
 
 interface IColumnProps {
-    showConfirmDelete: (id: number) => void;
+    showConfirmDelete: (id: string) => void;
     onEdit?: () => void;
     setCurrentData?: any
 }
 
-const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
+const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
     return [
         {
             title: 'STT',
@@ -39,14 +39,12 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
             )
         },
         {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: string) => {
+            title: 'Ngày tạo',
+            dataIndex: 'created_at',
+            key: 'created_at',
+            render: (created_at: string) => {
                 return (
-                    <Tag color={status == '1' ? 'green' : 'red'}>
-                        {status == '1' ? 'Kích hoạt' : 'Chưa kích hoạt'}
-                    </Tag>
+                    <Text>{dayjs(created_at).format('HH:mm DD/MM/YYYY')}</Text>
                 )
             }
         },
@@ -65,10 +63,9 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
                                 type='primary'
                                 shape="circle"
                                 size="middle"
-                                style={{ background: '#ff5629', borderColor: '#ff5629' }}
+                                style={{ background: '#1677ff', borderColor: '#1677ff' }}
                                 icon={<ToolOutlined className='icon-base' />}
-                                onClick={() => {
-                                }}
+                                onClick={() => setCurrentData(record)}
                             />
                         </Tooltip>
                         <Tooltip placement="top" title="Xoá">
