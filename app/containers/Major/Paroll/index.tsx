@@ -1,18 +1,21 @@
 import { CaretRightOutlined, DeleteOutlined, ExclamationCircleFilled, PlusOutlined, PrinterOutlined, SendOutlined, WalletOutlined } from '@ant-design/icons';
-import { Button, Card, Col, ConfigProvider, DatePicker, Form, Modal, Row, Select, Skeleton, Space, Spin, Table, Tooltip, Typography } from 'antd';
+import { Button, Card, Col, ConfigProvider, DatePicker, Empty, Form, Modal, Row, Select, Skeleton, Space, Spin, Table, Tooltip, Typography } from 'antd';
 import { createApolloClient } from 'apollo/index';
 import FilterCommon from 'components/FilterCommon';
 import TableCommon from 'components/TableCommon';
 import React, {
-    memo, useCallback, useEffect, useLayoutEffect, useState
+    memo, useCallback, useEffect, useLayoutEffect, useMemo, useState
 } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../../Layout/LayoutContext';
 import { Collapse, Divider } from 'antd';
 import buildColumn from './components/TimeKeepingColumn';
-import { formatNumberToCurrency } from 'utils/helper';
+import { formatNumberToCurrency, showAlert } from 'utils/helper';
 import dayjs from 'dayjs';
 import locale from 'antd/lib/locale/vi_VN';
+import { useMutation, useQuery } from 'react-query';
+import StaffService from 'services/Staff/Staff.service';
+import * as _ from 'lodash';
 
 const { Panel } = Collapse;
 
@@ -43,20 +46,29 @@ const columns: any = [
     },
     {
         title: 'Số công',
-        dataIndex: 'b1',
-        key: 'b1',
+        dataIndex: 'work_days',
+        key: 'work_days',
         width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
+        render: (work_days) => (
+            <Text>{formatNumberToCurrency(work_days) || '--'} ngày</Text>
         ),
     },
     {
         title: 'Lương cơ bản',
-        dataIndex: 'b2',
-        key: 'b2',
+        dataIndex: 'salary_basic',
+        key: 'salary_basic',
         width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
+        render: (salary_basic) => (
+            <Text>{formatNumberToCurrency(salary_basic) || '--'} vnđ</Text>
+        ),
+    },
+    {
+        title: 'Ngày nghỉ lễ, phép',
+        dataIndex: 'work_days_holiday',
+        key: 'work_days_holiday',
+        width: 100,
+        render: (work_days_holiday) => (
+            <Text>{formatNumberToCurrency(work_days_holiday) || '--'} ngày</Text>
         ),
     },
     {
@@ -64,40 +76,39 @@ const columns: any = [
         children: [
             {
                 title: 'Ngày thường',
-                dataIndex: 'b3',
-                key: 'b3',
+                dataIndex: 'bonus_hours',
+                key: 'bonus_hours',
                 width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
+                render: (bonus_hours) => (
+                    <Text>{formatNumberToCurrency(bonus_hours) || '--'} giờ</Text>
                 ),
             },
             {
                 title: 'Ngày lễ',
-                dataIndex: 'b4',
-                key: 'b4',
+                dataIndex: 'bonus_hours_holiday',
+                key: 'bonus_hours_holiday',
                 width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
+                render: (bonus_hours_holiday) => (
+                    <Text>{formatNumberToCurrency(bonus_hours_holiday) || '--'} giờ</Text>
                 ),
             },
         ],
+    }, {
+        title: 'Phụ cấp',
+        dataIndex: 'allowance',
+        key: 'allowance',
+        width: 100,
+        render: (allowance) => (
+            <Text>{formatNumberToCurrency(allowance) || '--'} vnđ</Text>
+        ),
     },
     {
         title: 'Tổng tiền làm thêm',
-        dataIndex: 'b5',
-        key: 'b5',
+        dataIndex: 'salary_bonus',
+        key: 'salary_bonus',
         width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
-        ),
-    }
-    , {
-        title: 'Phụ cấp',
-        dataIndex: 'b6',
-        key: 'b6',
-        width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
+        render: (salary_bonus) => (
+            <Text>{formatNumberToCurrency(salary_bonus) || '--'}</Text>
         ),
     },
     {
@@ -105,72 +116,49 @@ const columns: any = [
         children: [
             {
                 title: 'BHXH',
-                dataIndex: 'b7',
-                key: 'b7',
+                dataIndex: 'insurance_social_rate',
+                key: 'insurance_social_rate',
                 width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
+                render: (insurance_social_rate) => (
+                    <Text>{formatNumberToCurrency(insurance_social_rate) || '--'} vnđ</Text>
                 ),
             },
             {
                 title: 'BHYT',
-                dataIndex: 'b8',
-                key: 'b8',
+                dataIndex: 'insurance_health_rate',
+                key: 'insurance_health_rate',
                 width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
+                render: (insurance_health_rate) => (
+                    <Text>{formatNumberToCurrency(insurance_health_rate) || '--'} vnđ</Text>
                 ),
             },
             {
                 title: 'BHTN',
-                dataIndex: 'b9',
-                key: 'b9',
+                dataIndex: 'insurance_unemployment_rate',
+                key: 'insurance_unemployment_rate',
                 width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
+                render: (insurance_unemployment_rate) => (
+                    <Text>{formatNumberToCurrency(insurance_unemployment_rate) || '--'} vnđ</Text>
                 ),
             },
         ],
-    },
-    {
-        title: 'Tổng lương',
-        dataIndex: 'b10',
-        key: 'b10',
-        width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
-        ),
     },
     {
         title: 'Khấu trừ TNCN',
-        children: [
-            {
-                title: 'NPT',
-                dataIndex: 'b11',
-                key: 'b11',
-                width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
-                ),
-            },
-            {
-                title: 'TN tính thuế',
-                dataIndex: 'b12',
-                key: 'b12',
-                width: 100,
-                render: (b) => (
-                    <Text>{formatNumberToCurrency(b) || '--'}</Text>
-                ),
-            },
-        ],
+        dataIndex: 'rate',
+        key: 'rate',
+        width: 100,
+        render: (rate) => (
+            <Text>{formatNumberToCurrency(rate) || '--'} vnđ</Text>
+        ),
     },
     {
         title: 'Thực lĩnh',
-        dataIndex: 'b13',
-        key: 'b13',
+        dataIndex: 'salaryTotal',
+        key: 'salaryTotal',
         width: 100,
-        render: (b) => (
-            <Text>{formatNumberToCurrency(b) || '--'}</Text>
+        render: (salaryTotal) => (
+            <Text>{formatNumberToCurrency(salaryTotal) || '--'}</Text>
         ),
     },
     {
@@ -193,16 +181,6 @@ const columns: any = [
                             onClick={() => { }}
                         />
                     </Tooltip>
-                    <Tooltip placement="top" title="Xoá">
-                        <Button
-                            size="middle"
-                            type="primary"
-                            shape="circle"
-                            icon={<DeleteOutlined className='icon-base' />}
-                            danger
-                            onClick={() => { }}
-                        />
-                    </Tooltip>
                 </Space>
             );
         },
@@ -215,6 +193,7 @@ const Page = () => {
 
     const [form] = Form.useForm();
     const [showPayroll, setShowPayroll] = useState<boolean>(false);
+    const [dataPayroll, setDataPayroll] = useState<any>([]);
     const [action, setAction] = useState<string>('');
 
     useLayoutEffect(() => {
@@ -229,6 +208,36 @@ const Page = () => {
             },
         ]);
     }, []);
+
+    const { isLoading: isLoadingStaff, data: dataStaff } = useQuery(
+        'GET_LIST_STAFF_OPTIONS',
+        async () => {
+            const response = await StaffService.getAllStaff();
+
+            return response.data;
+        }, {
+        staleTime: 10 * (60 * 1000),
+    });
+
+    const { isLoading: loadingPayroll, mutate: mutatePayroll } = useMutation(
+        (params: any) => {
+            return StaffService.payrollStaff(params);
+        }, {
+        onSuccess: (res: any) => {
+            console.log({ res });
+            if (res.statusCode === 200) {
+                showAlert.success(res?.message || 'Tính lương thành công');
+                setShowPayroll(false);
+                setDataPayroll(prev => prev.concat(res?.data));
+            } else {
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
+        },
+        onError: (err: Error) => {
+            showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+        },
+    }
+    );
 
     const showConfirmDelete = useCallback((id: number) => {
         confirm({
@@ -272,9 +281,20 @@ const Page = () => {
                         <Button
                             type="primary"
                             className="btn-base"
-                            loading={false}
+                            loading={loadingPayroll}
                             style={{ background: '#1677ff' }}
-                            onClick={() => { }}
+                            onClick={() => {
+                                form.validateFields()
+                                    .then(async values => {
+                                        const body = {
+                                            month: Number(dayjs(values.plan_number).format('MM')),
+                                            year: Number(dayjs(values.plan_number).format('YYYY')),
+                                            staffId: values?.staffId
+                                        }
+
+                                        mutatePayroll(body);
+                                    })
+                            }}
                         >
                             Xác nhận
                         </Button>
@@ -292,7 +312,7 @@ const Page = () => {
                     </Space>,
                 ]}
             >
-                <Spin spinning={false}>
+                <Spin spinning={loadingPayroll}>
                     <Form
                         form={form}
                         name="basic"
@@ -318,13 +338,13 @@ const Page = () => {
                                     <DatePicker
                                         picker="month"
                                         className='input-item'
-                                        format={`[Tháng] MM [năm] YYYY`}                                    
+                                        format={`[Tháng] MM [năm] YYYY`}
                                     />
                                 </Form.Item>
                             </Col>
                             <Col span={24}>
                                 <Form.Item
-                                    name="staff"
+                                    name="staffId"
                                     label="Nhân viên"
                                     rules={[
                                         { required: true, message: 'Nhân viên không được để trống!' },
@@ -332,17 +352,16 @@ const Page = () => {
                                 >
                                     <Select
                                         className="input-item"
-                                        placeholder="Chọn Nhân viên nhân viên"
+                                        placeholder="Chọn nhân viên"
+                                        loading={isLoadingStaff}
                                         allowClear
                                     >
-                                        {[
-                                            { title: 'Nguyễn Khánh Thiện', id: 1 },
-                                            { title: 'Trần Phương Linh', id: 2 },
-                                            { title: 'Cù Huy Thành', id: 3 },
-                                            { title: 'Lê Thị Ánh', id: 4 },
-                                        ]?.map((_document: any, index: number) => (
-                                            <Option value={_document.id} key={`document-change-status-${index}`}>
-                                                {_document?.title}
+                                        {dataStaff?.staffs?.map((_option: any, index: number) => (
+                                            <Option
+                                                value={_option.id}
+                                                key={`option-change-status-${index}`}
+                                            >
+                                                {_option?.name}
                                             </Option>
                                         ))}
                                     </Select>
@@ -366,42 +385,45 @@ const Page = () => {
                     className="btn-base"
                     style={{ float: 'right', marginBottom: 20 }}
                     icon={<WalletOutlined className="icon-base" />}
-                    onClick={() => setShowPayroll(true)}
+                    onClick={() => {
+                        setShowPayroll(true);
+                        form.resetFields();
+                    }}
                 >
                     Tính lương nhân viên
                 </Button>
             </Row>
             <Space className='space-base' direction="vertical" size={30}>
-                {[1, 2, 3, 4, 5].map((item, index) => (
-                    <Collapse
-                        expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-                        bordered={false}
-                        style={{ background: '#fff' }}
-                    >
-                        <Panel header={
-                            <Space className='space-base' style={{ justifyContent: 'space-between' }}>
-                                <Text strong>{`Lương tháng ${item} - 2023`}</Text>
-                            </Space>
-                        } key="1">
-                            <TableCommon
-                                scroll={{ x: 1800 }}
-                                dataSource={[
-                                    { id: 1, name: 'Nguyễn Khánh Thiện', b1: 22, b2: 18000000, b3: 2, b4: 1, b5: 1200000, b6: 500000, b7: 80000, b8: 80000, b9: 80000, b10: 16000000, b11: 1, b12: 2, b13: 15500000 },
-                                    { id: 2, name: 'Trần Phương Linh', b1: 22, b2: 18000000, b3: 2, b4: 1, b5: 1200000, b6: 500000, b7: 80000, b8: 80000, b9: 80000, b10: 16000000, b11: 1, b12: 2, b13: 15500000 },
-                                    { id: 3, name: 'Lê Thị Ánh', b1: 22, b2: 18000000, b3: 2, b4: 1, b5: 1200000, b6: 500000, b7: 80000, b8: 80000, b9: 80000, b10: 16000000, b11: 1, b12: 2, b13: 15500000 },
-                                    { id: 4, name: 'Cù Huy Thành', b1: 22, b2: 18000000, b3: 2, b4: 1, b5: 1200000, b6: 500000, b7: 80000, b8: 80000, b9: 80000, b10: 16000000, b11: 1, b12: 2, b13: 15500000 },
-                                    { id: 5, name: 'Đan Thị Linh', b1: 22, b2: 18000000, b3: 2, b4: 1, b5: 1200000, b6: 500000, b7: 80000, b8: 80000, b9: 80000, b10: 16000000, b11: 1, b12: 2, b13: 15500000 },
-                                ]}
-                                loading={false}
-                                pagination={{
-                                    showTotal: (total: number) => <Text>Tổng số {total}</Text>,
-                                }}
-                                columns={columns}
-                                onChangePagination={() => { }}
-                            />
-                        </Panel>
-                    </Collapse>
-                ))}
+                {dataPayroll?.length > 0 && (
+                    <>
+                        {Object.keys(_.groupBy(dataPayroll, 'date')).map((item, index) => (
+                            <Collapse
+                                defaultActiveKey={['1']}
+                                expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+                                bordered={false}
+                                style={{ background: '#fff' }}
+                            >
+                                <Panel header={
+                                    <Space className='space-base' style={{ justifyContent: 'space-between' }}>
+                                        <Text strong>{`Lương tháng ${item}`}</Text>
+                                    </Space>
+                                } key="1">
+                                    <TableCommon
+                                        scroll={{ x: 1800 }}
+                                        dataSource={_.groupBy(dataPayroll, 'date')[item] || []}
+                                        loading={false}
+                                        pagination={false}
+                                        onChangePagination={() => { }}
+                                        columns={columns}
+                                    />
+                                </Panel>
+                            </Collapse>
+                        ))}
+                    </>
+                )}
+                {dataPayroll?.length == 0 && <div style={{ margin: '0px 40px', marginTop: '80px' }}>
+                    <Empty description="Chưa có thông tin tính lương" />
+                </div>}
             </Space>
         </React.Fragment>
     );
