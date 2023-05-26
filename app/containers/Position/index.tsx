@@ -55,10 +55,10 @@ const Page = () => {
         (id: string) => {
             return PositionService.deletePosition(id);
         }, {
-        onSuccess: (res: any) => {            
+        onSuccess: (res: any) => {
             if (res?.statusCode === 200) {
                 showAlert.success('Xóa chức vụ thành công');
-                refetch();                
+                refetch();
             } else {
                 showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
@@ -126,7 +126,7 @@ const Page = () => {
                 style={{ marginBottom: 20 }}
                 title="Danh sách chức vụ"
                 bordered={false}
-                extra={
+                extra={localStorage.getItem('role') == 'hr' ?
                     <Button
                         type="primary"
                         className="btn-base"
@@ -138,7 +138,7 @@ const Page = () => {
                     >
                         Thêm mới
                     </Button>
-                }
+                    : null}
             >
                 <Space className='space-base' direction="vertical" size={30}>
                     {/* <FilterCommon
@@ -154,10 +154,12 @@ const Page = () => {
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
-                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
-                            setCurrentData(data);
-                            setAction('edit')
-                        } })}
+                        columns={buildColumn({
+                            showConfirmDelete, setCurrentData: (data) => {
+                                setCurrentData(data);
+                                setAction('edit')
+                            }
+                        })}
                         onChangePagination={() => { }}
                     />
                 </Space>

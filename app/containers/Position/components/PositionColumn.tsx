@@ -48,6 +48,7 @@ const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
                 )
             }
         },
+        (localStorage.getItem('role') == 'hr' ? 
         {
             title: 'Thao tác',
             dataIndex: 'action',
@@ -81,7 +82,8 @@ const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
                     </Space>
                 );
             },
-        },
+        }
+        : {}),
     ]
 };
 

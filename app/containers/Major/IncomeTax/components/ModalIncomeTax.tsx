@@ -22,6 +22,7 @@ const ModalIncomeTax = ({ action, onHide, currentData, refetch }: IModalIncomeTa
                 showAlert.success('Tạo cấp bậc thuế thành công');
                 refetch();
                 onHide();
+                form.resetFields();
             } else {
                 showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
