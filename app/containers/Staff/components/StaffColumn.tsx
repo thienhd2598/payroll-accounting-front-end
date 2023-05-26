@@ -67,7 +67,7 @@ const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
             dataIndex: 'birthday',
             key: 'birthday',
             render: (birthday) => (
-                <Text>{dayjs(birthday).format('DD-MM-YYYY') || '--'}</Text>
+                <Text>{dayjs.unix(birthday).format('DD-MM-YYYY') || '--'}</Text>
             )
         },      
         {

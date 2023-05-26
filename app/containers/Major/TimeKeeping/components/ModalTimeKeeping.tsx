@@ -38,6 +38,7 @@ const ModalTimeKeeping = ({ action, onHide, currentData, refetch }: IModalTimeKe
             if (res.statusCode === 200) {
                 showAlert.success('Tạo thông tin chấm công thành công');
                 refetch();
+                form.resetFields();
                 onHide();
             } else {
                 showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')

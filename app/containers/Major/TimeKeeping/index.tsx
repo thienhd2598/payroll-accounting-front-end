@@ -1,5 +1,5 @@
 import { CaretRightOutlined, ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Modal, Row, Skeleton, Space, Spin, Table, Typography } from 'antd';
+import { Button, Card, Empty, Form, Modal, Row, Skeleton, Space, Spin, Table, Typography } from 'antd';
 import { createApolloClient } from 'apollo/index';
 import FilterCommon from 'components/FilterCommon';
 import TableCommon from 'components/TableCommon';
@@ -39,9 +39,9 @@ const Page = () => {
         staleTime: 10 * (60 * 1000),
     });
 
-    const dataTimeKeeping = useMemo(
+    const dataTimeKeeping: any = useMemo(
         () => {
-            if (!data) return [];
+            if (!data || data?.timeKeepings?.length == 0) return [];
 
             const newData = data?.timeKeepings
                 ?.map(_item => ({
@@ -118,33 +118,42 @@ const Page = () => {
                     Thêm bảng chấm công
                 </Button>
                 <Space className='space-base' direction="vertical" size={30}>
-                    {Object.keys(dataTimeKeeping).map((item, index) => {                        
-                        return (
-                            <Collapse
-                                expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-                                bordered={false}
-                                defaultActiveKey={['1']}
-                                style={{ background: '#fff' }}
-                            >
-                                <Panel header={
-                                    <Space className='space-base' style={{ justifyContent: 'space-between' }}>
-                                        <Text strong>{`Bảng chấm công tháng ${item}`}</Text>
-                                    </Space>
-                                } key="1">
-                                    <TableCommon
-                                        dataSource={dataTimeKeeping[item]}
-                                        loading={false}
-                                        pagination={false}
-                                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
-                                            setCurrentData(data);
-                                            setAction('edit')
-                                        } })}
-                                        onChangePagination={() => { }}
-                                    />
-                                </Panel>
-                            </Collapse>
-                        )
-                    })}
+                    {Object.keys(dataTimeKeeping)?.length > 0 && (
+                        <>
+                            {Object.keys(dataTimeKeeping).map((item, index) => {
+                                return (
+                                    <Collapse
+                                        expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+                                        bordered={false}
+                                        defaultActiveKey={['1']}
+                                        style={{ background: '#fff' }}
+                                    >
+                                        <Panel header={
+                                            <Space className='space-base' style={{ justifyContent: 'space-between' }}>
+                                                <Text strong>{`Bảng chấm công tháng ${item}`}</Text>
+                                            </Space>
+                                        } key="1">
+                                            <TableCommon
+                                                dataSource={dataTimeKeeping[item]}
+                                                loading={false}
+                                                pagination={false}
+                                                columns={buildColumn({
+                                                    showConfirmDelete, setCurrentData: (data) => {
+                                                        setCurrentData(data);
+                                                        setAction('edit')
+                                                    }
+                                                })}
+                                                onChangePagination={() => { }}
+                                            />
+                                        </Panel>
+                                    </Collapse>
+                                )
+                            })}
+                        </>
+                    )}
+                    {Object.keys(dataTimeKeeping)?.length == 0 && <div style={{ margin: '0px 40px', marginTop: '80px' }}>
+                        <Empty description="Chưa có bảng chấm công" />
+                    </div>}
                 </Space>
             </Spin>
         </React.Fragment>

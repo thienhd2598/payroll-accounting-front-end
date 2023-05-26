@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import { formatNumberToCurrency } from 'utils/helper';
 
-const HtmlPrint = ({ isShowPrint, onHide }) => {
+const HtmlPrint = ({ isShowPrint, onHide, data }) => {    
     const componentRef = React.useRef() as any;
 
     const handlePrint = useReactToPrint({
@@ -11,14 +12,14 @@ const HtmlPrint = ({ isShowPrint, onHide }) => {
     useEffect(() => {
         if (isShowPrint) {
             handlePrint();
-            onHide();            
+            onHide();
         }
     }, [isShowPrint]);
     return (
         <>
             <div>
                 <div style={{ display: 'none' }}>
-                    <div ref={componentRef} dangerouslySetInnerHTML={{ __html: templateHtml({ name: 'Thiện' }) }} />
+                    <div ref={componentRef} dangerouslySetInnerHTML={{ __html: templateHtml(data) }} />
                 </div>
             </div>
         </>
@@ -28,7 +29,11 @@ const HtmlPrint = ({ isShowPrint, onHide }) => {
 export default HtmlPrint;
 
 
-const templateHtml = ({ name }) => {
+const templateHtml = (props: any) => {
+    const {
+        allowance, name, bonus_hours, bonus_hours_holiday, date, insurance_health_rate, insurance_social_rate, insurance_unemployment_rate,
+        rate, salaryTotal, salary_basic, salary_bonus, salary_diff, work_days, work_days_holiday, price
+    } = props[0] || {}
     return `
     <html>
 
@@ -906,7 +911,7 @@ const templateHtml = ({ name }) => {
                     <p class="c14"><span class="c4">C&oacute; </span></p>
                     <p class="c14"><span class="c4">TK141</span></p>
                 </td>
-            </tr>
+            </tr>            
             <tr class="c49">
                 <td class="c22" colspan="1" rowspan="1">
                     <p class="c45"><span class="c4">1</span></p>
@@ -915,54 +920,51 @@ const templateHtml = ({ name }) => {
                     <p class="c7"><span class="c4"> ${name} </span></p>
                 </td>
                 <td class="c43" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(work_days)}</span></p>
                 </td>
                 <td class="c38" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(salary_basic)} vnđ</span></p>
                 </td>
                 <td class="c23" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(work_days_holiday)}</span></p>
                 </td>
                 <td class="c16" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(bonus_hours)}</span></p>
                 </td>
                 <td class="c16" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(bonus_hours_holiday)}</span></p>
                 </td>
                 <td class="c25" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(allowance)} vnđ</span></p>
                 </td>
                 <td class="c26" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(salary_bonus)} vnđ</span></p>
                 </td>
                 <td class="c37" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(insurance_social_rate)} vnđ</span></p>
                 </td>
                 <td class="c12" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(insurance_health_rate)} vnđ</span></p>
                 </td>
                 <td class="c8" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(insurance_unemployment_rate)} vnđ</span></p>
                 </td>
                 <td class="c36" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(rate)} vnđ</span></p>
                 </td>
                 <td class="c40" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(price)} vnđ</span></p>
                 </td>
                 <td class="c31" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(price)} vnđ</span></p>
                 </td>
                 <td class="c48" colspan="1" rowspan="1">
-                    <p class="c7"><span class="c4"></span></p>
+                    <p class="c7"><span class="c4">${formatNumberToCurrency(salaryTotal)} vnđ</span></p>
                 </td>
             </tr>
         </table>
         <p class="c10 c17"><span class="c4"></span></p>
-        <p class="c0 c17"><span class="c4"></span></p>
-        <p class="c0 c39"><span class="c4">T&#7893;ng s&#7889; ti&#7873;n (vi&#7871;t b&#7857;ng
-                ch&#7919;):...................................................................................</span></p><a
-            id="t.fd2db63af81b02a0f1edda1941164b11ddab8ac6"></a><a id="t.2"></a>
+        <p class="c0 c17"><span class="c4"></span></p>        
         <table class="c5">
             <tr class="c18">
                 <td class="c15" colspan="1" rowspan="1">
