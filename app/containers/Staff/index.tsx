@@ -10,8 +10,9 @@ import { Helmet } from 'react-helmet-async';
 import { useLayoutContext } from '../Layout/LayoutContext';
 import buildColumn from './components/StaffColumn';
 import StaffService from 'services/Staff/Staff.service';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import ModalStaff from './components/ModalStaff';
+import { showAlert } from 'utils/helper';
 
 
 const { confirm } = Modal;
@@ -36,17 +37,39 @@ const Page = () => {
     const { appendBreadcrumb } = useLayoutContext();
 
     const [form] = Form.useForm();
+    const [currentData, setCurrentData] = useState(null);
     const [action, setAction] = useState<string>('');
 
-    const { isLoading: loadingListStaff, data: dataListStaff, refetch } = useQuery(
+    const { isLoading, data, refetch } = useQuery(
         'GET_LIST_STAFF',
         async () => {
-            const response = await StaffService.getListStaff({});
+            const response = await StaffService.getAllStaff();
 
             return response.data;
         }, {
         staleTime: 10 * (60 * 1000),
     });
+
+    const { isLoading: loadingDeleteStaff, mutate: mutateDeleteStaff, } = useMutation(
+        (id: string) => {
+            return StaffService.deleteStaff(id);
+        }, {
+        onSuccess: (res: any) => {            
+            if (res?.statusCode === 200) {
+                showAlert.success('Xóa nhân viên thành công');
+                refetch();                
+            } else {
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
+            console.log({ res })
+        },
+        onError: (err: Error) => {
+            showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
+        },
+    }
+    );
+
+    console.log({ data });
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -56,12 +79,12 @@ const Page = () => {
             },
             {
                 title: 'Quản lý nhân viên',
-                pathname: '/quan-ly-nhan-vien/',
+                pathname: '/quan-ly-chuc-vu/',
             },
         ]);
     }, []);
 
-    const showConfirmDelete = useCallback((id: number) => {
+    const showConfirmDelete = useCallback((id: string) => {
         confirm({
             title: `Bạn có muốn xoá nhân viên này?`,
             icon: <ExclamationCircleFilled />,
@@ -78,6 +101,7 @@ const Page = () => {
                 style: { minWidth: 80 }
             },
             onOk: async () => {
+                mutateDeleteStaff(id)
             },
             onCancel() { },
         });
@@ -91,8 +115,11 @@ const Page = () => {
             <ModalStaff
                 action={action}
                 refetch={refetch}
-                currentData={null}
-                onHide={() => setAction('')}
+                currentData={currentData}
+                onHide={() => {
+                    setAction('');
+                    setCurrentData(null);
+                }}
             />
             <Card
                 style={{ marginBottom: 20 }}
@@ -110,24 +137,23 @@ const Page = () => {
                 }
             >
                 <Space className='space-base' direction="vertical" size={30}>
-                    <FilterCommon
+                    {/* <FilterCommon
                         form={form}
                         loading={false}
                         dataFilter={dataFilter}
                         onSearch={() => { }}
                         onReSearch={() => { }}
-                    />
+                    /> */}
                     <TableCommon
-                        dataSource={[
-                            { id: 1, name: 'Nguyễn Khánh Thiện', email: 'thienhd2510@gmail.com', department: 'Công nghệ', position: 'Trưởng nhóm', phone: '0356924848', status: 1 },
-                            { id: 2, name: 'Trần Phương Linh', email: 'tunhi2001@gmail.com', department: 'Công nghệ', position: 'Nhân viên', phone: '0356924848', status: 0 },
-                        ]}                        
-                        loading={false}
+                        dataSource={data?.staffs || []}
+                        loading={isLoading || loadingDeleteStaff}
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
-
-                        columns={buildColumn({ showConfirmDelete })}
+                        columns={buildColumn({ showConfirmDelete, setCurrentData:(data) => {
+                            setCurrentData(data);
+                            setAction('edit')
+                        } })}
                         onChangePagination={() => { }}
                     />
                 </Space>

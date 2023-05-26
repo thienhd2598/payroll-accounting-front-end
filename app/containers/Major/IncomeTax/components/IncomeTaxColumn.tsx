@@ -23,7 +23,7 @@ const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
             )
         },
         {
-            title: 'Tên chức vụ',
+            title: 'Cấp bậc thu nhập chịu thuế',
             dataIndex: 'name',
             key: 'name',
             render: (name) => (
@@ -31,11 +31,11 @@ const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
             )
         },        
         {
-            title: 'Phụ cấp chức vụ',
-            dataIndex: 'allowance',
-            key: 'allowance',
-            render: (allowance) => (
-                <Text>{allowance || '--'} %</Text>
+            title: 'Thuế suất',
+            dataIndex: 'rate',
+            key: 'rate',
+            render: (rate) => (
+                <Text>{rate || '--'} %</Text>
             )
         },
         {

@@ -1,9 +1,9 @@
-import { Button, Checkbox, Col, Form, Input, Modal, Radio, Row, Space, Spin } from "antd";
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Spin, Typography } from "antd";
 import React, { memo, useCallback, useMemo } from "react";
-import CompanyService from 'services/Company/Company.service';
-import { CreateCompanyRequest, UpdateCompanyRequest } from 'services/Company/Company.types';
 import { showAlert } from 'utils/helper';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
+import AdvanceSalaryService from "services/AdvancedSalary/AdvanceSalary.service";
+import StaffService from "services/Staff/Staff.service";
 
 interface IModalAdvanceSalary {
     action: string,
@@ -12,20 +12,36 @@ interface IModalAdvanceSalary {
     refetch: any
 }
 
+const { Text } = Typography;
+const { TextArea } = Input;
+const { Option } = Select;
+
 const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdvanceSalary) => {
     const [form] = Form.useForm();
-    const { isLoading: loadingCreateCompany, mutate: mutateCreateCompany, } = useMutation(
-        (params: CreateCompanyRequest) => {
-            return CompanyService.createCompany(params);
+
+    const { isLoading, data } = useQuery(
+        'GET_LIST_STAFF',
+        async () => {
+            const response = await StaffService.getAllStaff();
+
+            return response.data;
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
-                showAlert.success('Tạo thông tin ứng lương thành công');
+        staleTime: 10 * (60 * 1000),
+    });
+
+
+    const { isLoading: loadingCreateAdvanceSalary, mutate: mutateCreateAdvanceSalary, } = useMutation(
+        (params: any) => {
+            return AdvanceSalaryService.createAdvanceSalary(params);
+        }, {
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
+                showAlert.success('Tạo thông tin tạm ứng lương thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
-            }            
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+            }
         },
         onError: (err: Error) => {
             showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
@@ -33,17 +49,17 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
     }
     );
 
-    const { isLoading: loadingEditCompany, mutate: mutateEditCompany, } = useMutation(
-        (params: UpdateCompanyRequest) => {
-            return CompanyService.updateCompany(params);
+    const { isLoading: loadingEditAdvanceSalary, mutate: mutateEditAdvanceSalary, } = useMutation(
+        (params: any) => {
+            return AdvanceSalaryService.updateAdvanceSalary(params);
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
-                showAlert.success('Cập nhật thông tin ứng lương thành công');                
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
+                showAlert.success('Cập nhật thông tin tạm ứng lương thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
             console.log({ res })
         },
@@ -60,9 +76,9 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
                 return;
             };
 
-            const { name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description } = currentData || {};
+            const { name, price, note, staff } = currentData || {};
             form.setFieldsValue({
-                name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description
+                name, price, note, staffId: staff?.id
             });
         }, [currentData]
     );
@@ -73,11 +89,15 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
                 form.validateFields()
                     .then(async values => {
                         if (action == 'create') {
-                            mutateCreateCompany({ ...values });
+                            mutateCreateAdvanceSalary({
+                                ...values,
+                                price: Number(values?.price)
+                            });
                         } else {
-                            mutateEditCompany({
+                            mutateEditAdvanceSalary({
                                 id: currentData?.id,
-                                ...values
+                                ...values,
+                                price: Number(values?.price)
                             })
                         }
                     })
@@ -89,19 +109,19 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
 
     return (
         <Modal
-            title={action === 'create' ? 'Tạo mới thông tin ứng lương' : 'Cập nhật thông tin thông tin ứng lương'}
+            title={action === 'create' ? 'Tạo mới thông tin tạm ứng lương' : 'Cập nhật thông tin thông tin tạm ứng lương'}
             open={!!action}
             keyboard={true}
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            style={{ top: 50 }}
-            width={800}
+            style={{ top: 120 }}
+            width={600}
             onCancel={onHide}
             footer={[
                 <Space size={20}>
                     <Button
                         type="primary"
                         className="btn-base"
-                        loading={loadingCreateCompany || loadingEditCompany}
+                        loading={loadingCreateAdvanceSalary || loadingEditAdvanceSalary}
                         onClick={onConfirm}
                         style={{ background: '#1677ff' }}
                     >
@@ -111,7 +131,7 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
                         type="primary"
                         className="btn-base"
                         danger
-                        disabled={loadingCreateCompany || loadingEditCompany}
+                        disabled={loadingCreateAdvanceSalary || loadingEditAdvanceSalary}
                         onClick={onHide}
                     >
                         Huỷ bỏ
@@ -119,7 +139,7 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
                 </Space>,
             ]}
         >
-            <Spin spinning={loadingCreateCompany || loadingEditCompany}>
+            <Spin spinning={loadingCreateAdvanceSalary || loadingEditAdvanceSalary}>
                 <Form
                     form={form}
                     name="basic"
@@ -128,143 +148,94 @@ const ModalAdvanceSalary = ({ action, onHide, currentData, refetch }: IModalAdva
                     initialValues={{ remember: true }}
                 >
                     <Row gutter={20}>
-                        <Col span={12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="name"
-                                label="Tên công ty"
+                                label="Tên mẫu ứng lương"
                                 rules={[
-                                    { required: true, message: 'Tên công ty không được để trống!' },
+                                    { required: true, message: 'Tên mẫu ứng lương không được để trống!' },
                                 ]}
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Tên công ty"
+                                    placeholder="Tên mẫu ứng lương"
                                     allowClear
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col span={24}>
                             <Form.Item
-                                name="tax_code"
-                                label="Mã số thuế"
+                                name="staffId"
+                                label="Nhân viên"
                                 rules={[
-                                    { required: true, message: 'Mã số thuế không được để trống!' },
+                                    { required: true, message: 'Nhân viên không được để trống!' },
                                 ]}
                             >
-                                <Input
+                                <Select
                                     className="input-item"
-                                    placeholder="Mã số thuế"
+                                    placeholder="Chọn nhân viên"
+                                    loading={isLoading}
                                     allowClear
-                                />
+                                >
+                                    {data?.staffs?.map((_option: any, index: number) => (
+                                        <Option
+                                            value={_option.id}
+                                            key={`option-change-status-${index}`}
+                                        >
+                                            {_option?.name}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col span={24}>
                             <Form.Item
-                                name="deputy"
-                                label="Người đại diện pháp luật"
+                                name="price"
+                                label="Số tiền tạm ứng"
                                 rules={[
-                                    { required: true, message: 'Người đại diện pháp luật không được để trống!' },
+                                    { required: true, message: 'Số tiền tạm ứng không được để trống!' },
                                 ]}
                             >
-                                <Input
+                                <InputNumber
                                     className="input-item"
-                                    placeholder="Người đại diện pháp luật"
-                                    allowClear
+                                    placeholder="Số tiền tạm ứng"
+                                    style={{ width: '100%' }}
+                                    min={0}
+                                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    parser={(value: any) => value.replace(/\$\s?|(,*)/g, '')}
+                                    onKeyPress={evt => {
+                                        var iKeyCode = evt.which ? evt.which : evt.keyCode;
+                                        return (
+                                            ((iKeyCode !== 8 && iKeyCode !== 46 && iKeyCode !== 45 && iKeyCode < 48) ||
+                                                (iKeyCode > 57 &&
+                                                    iKeyCode !== 189 &&
+                                                    iKeyCode !== 68 &&
+                                                    iKeyCode !== 69)) &&
+                                            evt.preventDefault()
+                                        );
+                                    }}
                                 />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item
-                                name="position"
-                                label="thông tin ứng lương"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="thông tin ứng lương"
-                                    allowClear
-                                />
-                            </Form.Item>
+                            <Text>Tài khoản nợ: <strong>331</strong></Text>
                         </Col>
                         <Col span={12}>
-                            <Form.Item
-                                name="address"
-                                label="Địa chỉ"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Địa chỉ"
-                                    allowClear
-                                />
-                            </Form.Item>
+                            <Text>Tài khoản có: <strong>113</strong></Text>
                         </Col>
-                        <Col span={12}>
+                        <Col span={24} style={{ marginTop: 20 }}>
                             <Form.Item
-                                name="phone"
-                                label="Số điện thoại"
+                                name="note"
+                                label="Lý do"
+                                rules={[
+                                    { required: true, message: 'Lý do không được để trống!' },
+                                ]}
                             >
-                                <Input
+                                <TextArea
                                     className="input-item"
-                                    placeholder="Số điện thoại"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="telephone"
-                                label="Di động"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Di động"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="fax"
-                                label="Fax"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Fax"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="account_number"
-                                label="Tài khoản số"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Tài khoản số"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="bank"
-                                label="Ngân hàng"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Ngân hàng"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="description"
-                                label="Mô tả"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Mô tả"
+                                    placeholder="Lý do"
+                                    rows={5}
+                                    showCount
                                     allowClear
                                 />
                             </Form.Item>

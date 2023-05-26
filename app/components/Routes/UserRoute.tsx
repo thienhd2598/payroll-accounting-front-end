@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectToken } from 'redux/selectors';
 
 const UserRoute = ({ ...rest }: any): any => {
-  const token = localStorage.getItem('jwt-token-admin');
+  const token = localStorage.getItem('jwt-token');
 
   if (!token) {
     return <Redirect to="/login" />;

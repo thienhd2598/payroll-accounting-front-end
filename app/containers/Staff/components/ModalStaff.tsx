@@ -1,11 +1,15 @@
-import { Button, Checkbox, Col, Form, Input, Modal, Radio, Row, Space, Spin, Select, DatePicker } from "antd";
+import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Spin } from "antd";
 import React, { memo, useCallback, useMemo } from "react";
-import CompanyService from 'services/Company/Company.service';
-import { CreateCompanyRequest, UpdateCompanyRequest } from 'services/Company/Company.types';
 import { showAlert } from 'utils/helper';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
+import StaffService from "services/Staff/Staff.service";
+import DepartmentService from "services/Department/Department.service";
+import PositionService from "services/Position/Position.service";
+import IncomeTaxService from "services/IncomeTax/IncomeTax.service";
+import moment from 'moment';
+import dayjs from 'dayjs';
 
-interface IModalCompany {
+interface IModalStaff {
     action: string,
     onHide: () => void,
     currentData: any,
@@ -14,19 +18,20 @@ interface IModalCompany {
 
 const { Option } = Select;
 
-const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) => {
+const ModalStaff = ({ action, onHide, currentData, refetch }: IModalStaff) => {
     const [form] = Form.useForm();
-    const { isLoading: loadingCreateCompany, mutate: mutateCreateCompany, } = useMutation(
-        (params: CreateCompanyRequest) => {
-            return CompanyService.createCompany(params);
+
+    const { isLoading: loadingCreateStaff, mutate: mutateCreateStaff, } = useMutation(
+        (params: any) => {            
+            return StaffService.createStaff(params);
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
                 showAlert.success('Tạo nhân viên thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
         },
         onError: (err: Error) => {
@@ -35,17 +40,17 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
     }
     );
 
-    const { isLoading: loadingEditCompany, mutate: mutateEditCompany, } = useMutation(
-        (params: UpdateCompanyRequest) => {
-            return CompanyService.updateCompany(params);
+    const { isLoading: loadingEditStaff, mutate: mutateEditStaff, } = useMutation(
+        (params: any) => {
+            return StaffService.updateStaff(params);
         }, {
-        onSuccess: (res) => {
-            if (res.status === 200) {
+        onSuccess: (res: any) => {
+            if (res.statusCode === 200) {
                 showAlert.success('Cập nhật nhân viên thành công');
                 refetch();
                 onHide();
             } else {
-                showAlert.error(res.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
+                showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
             }
             console.log({ res })
         },
@@ -55,6 +60,37 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
     }
     );
 
+    const { isLoading: loadingOptions, data } = useQuery(
+        'GET_LIST_OPTIONS_FOR_STAFF',
+        async () => {
+            const { data: dataDepartment } = await DepartmentService.getAllDepartment();
+            const { data: dataPosition } = await PositionService.getAllPosition();
+            const { data: dataIncomeTax } = await IncomeTaxService.getAllIncomeTax();
+
+            return { dataDepartment, dataPosition, dataIncomeTax };
+        }, {
+        staleTime: 10 * (60 * 1000),
+    });
+
+    const { optionsDepartment, optionsPosition, optionsIncomeTax } = useMemo(
+        () => {
+            const { dataDepartment, dataIncomeTax, dataPosition } = data || {};
+
+            return {
+                optionsDepartment: dataDepartment
+                    ?.departments
+                    ?.map(_department => ({ name: _department?.name, value: _department?.id })),
+                optionsPosition: dataPosition
+                    ?.positions
+                    ?.map(_position => ({ name: _position?.name, value: _position?.id })),
+                optionsIncomeTax: dataIncomeTax
+                    ?.incomeTaxs
+                    ?.map(_incomeTax => ({ name: _incomeTax?.name, value: _incomeTax?.id })),
+
+            }
+        }, [data]
+    );
+
     useMemo(
         () => {
             if (!currentData) {
@@ -62,9 +98,11 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                 return;
             };
 
-            const { name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description } = currentData || {};
+            const { name, phone, birthday, address, date_from, tax_code, department, position, income_tax } = currentData || {};
             form.setFieldsValue({
-                name, tax_code, deputy, position, address, phone, telephone, fax, account_number, bank, description
+                name, phone, address, tax_code, departmentId: department?.id, positionId: position?.id, incomeTaxId: income_tax?.id, 
+                birthday: moment(dayjs.unix(birthday).format('YYYY-MM-DD')),
+                date_from: moment(dayjs.unix(date_from).format('YYYY-MM-DD')),
             });
         }, [currentData]
     );
@@ -74,12 +112,20 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
             try {
                 form.validateFields()
                     .then(async values => {
+                        console.log({ values });                        
+
                         if (action == 'create') {
-                            mutateCreateCompany({ ...values });
+                            mutateCreateStaff({ 
+                                ...values,
+                                birthday: String(moment(values?.birthday).unix()),
+                                date_from: String(moment(values?.date_from).unix()),
+                            });
                         } else {
-                            mutateEditCompany({
+                            mutateEditStaff({
                                 id: currentData?.id,
-                                ...values
+                                ...values,
+                                birthday: String(moment(values?.birthday).unix()),
+                                date_from: String(moment(values?.date_from).unix()),
                             })
                         }
                     })
@@ -95,15 +141,15 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
             open={!!action}
             keyboard={true}
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            style={{ top: 50 }}
-            width={800}
+            style={{ top: 150 }}
+            width={600}
             onCancel={onHide}
             footer={[
                 <Space size={20}>
                     <Button
                         type="primary"
                         className="btn-base"
-                        loading={loadingCreateCompany || loadingEditCompany}
+                        loading={loadingCreateStaff || loadingEditStaff}
                         onClick={onConfirm}
                         style={{ background: '#1677ff' }}
                     >
@@ -113,7 +159,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         type="primary"
                         className="btn-base"
                         danger
-                        disabled={loadingCreateCompany || loadingEditCompany}
+                        disabled={loadingCreateStaff || loadingEditStaff}
                         onClick={onHide}
                     >
                         Huỷ bỏ
@@ -121,7 +167,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                 </Space>,
             ]}
         >
-            <Spin spinning={loadingCreateCompany || loadingEditCompany}>
+            <Spin spinning={loadingCreateStaff || loadingEditStaff}>
                 <Form
                     form={form}
                     name="basic"
@@ -132,7 +178,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                     <Row gutter={20}>
                         <Col span={12}>
                             <Form.Item
-                                name="position"
+                                name="name"
                                 label="Tên nhân viên"
                                 required
                             >
@@ -145,7 +191,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="name"
+                                name="positionId"
                                 label="Chức vụ"
                                 rules={[
                                     { required: true, message: 'Chức vụ không được để trống!' },
@@ -154,18 +200,15 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                                 <Select
                                     className="input-item"
                                     placeholder="Chọn chức vụ nhân viên"
+                                    loading={loadingOptions}
                                     allowClear
                                 >
-                                    {[
-                                        { title: 'Giám đốc', id: 1 },
-                                        { title: 'Phó giám đốc', id: 2 },
-                                        { title: 'Giám đốc công nghệ', id: 3 },
-                                        { title: 'Kế toán trưởng', id: 4 },
-                                        { title: 'Trưởng nhóm', id: 5 },
-                                        { title: 'Nhân viên', id: 6 },
-                                    ]?.map((_document: any, index: number) => (
-                                        <Option value={_document.id} key={`document-change-status-${index}`}>
-                                            {_document?.title}
+                                    {optionsPosition?.map((_option: any, index: number) => (
+                                        <Option
+                                            value={_option.value}
+                                            key={`option-change-status-${index}`}
+                                        >
+                                            {_option?.name}
                                         </Option>
                                     ))}
                                 </Select>
@@ -173,7 +216,7 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="tax_code"
+                                name="departmentId"
                                 label="Phòng ban"
                                 rules={[
                                     { required: true, message: 'Phòng ban không được để trống!' },
@@ -182,21 +225,15 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                                 <Select
                                     className="input-item"
                                     placeholder="Chọn phòng ban nhân viên"
+                                    loading={loadingOptions}
                                     allowClear
                                 >
-                                    {[
-                                        { id: 1, name: 'Công nghệ' },
-                                        { id: 2, name: 'Vận hành' },
-                                        { id: 3, name: 'Kế toán' },
-                                        { id: 4, name: 'Grow 1' },
-                                        { id: 5, name: 'Grow 2' },
-                                        { id: 6, name: 'Grow 3' },
-                                        { id: 7, name: 'Hành chính nhân sự' },
-                                        { id: 8, name: 'Media' },
-                                        { id: 9, name: 'Marketing' },
-                                    ]?.map((_document: any, index: number) => (
-                                        <Option value={_document.id} key={`document-change-status-${index}`}>
-                                            {_document?.name}
+                                    {optionsDepartment?.map((_option: any, index: number) => (
+                                        <Option
+                                            value={_option.value}
+                                            key={`option-change-status-${index}`}
+                                        >
+                                            {_option?.name}
                                         </Option>
                                     ))}
                                 </Select>
@@ -204,37 +241,37 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="position"
+                                name="incomeTaxId"
                                 label="Cấp bậc thuế"
-                                required
+                                rules={[
+                                    { required: true, message: 'Cấp bậc thuế không được để trống!' },
+                                ]}
                             >
-                                <Input
+                                <Select
                                     className="input-item"
-                                    placeholder="Cấp bậc thuế"
+                                    placeholder="Chọn cấp bậc thuế nhân viên"
+                                    loading={loadingOptions}
                                     allowClear
-                                />
+                                >
+                                    {optionsIncomeTax?.map((_option: any, index: number) => (
+                                        <Option
+                                            value={_option.value}
+                                            key={`option-change-status-${index}`}
+                                        >
+                                            {_option?.name}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="fax"
+                                name="tax_code"
                                 label="Mã số thuế"
                             >
                                 <Input
                                     className="input-item"
                                     placeholder="Fax"
-                                    allowClear
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="address"
-                                label="Địa chỉ"
-                            >
-                                <Input
-                                    className="input-item"
-                                    placeholder="Địa chỉ"
                                     allowClear
                                 />
                             </Form.Item>
@@ -253,24 +290,38 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="telephone"
-                                label="Di động"
+                                name="address"
+                                label="Địa chỉ"
                             >
                                 <Input
                                     className="input-item"
-                                    placeholder="Di động"
+                                    placeholder="Địa chỉ"
                                     allowClear
                                 />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                name="description"
-                                label="Sinh nhật"
+                                name="date_from"
+                                label="Ngày vào làm"
                             >
                                 <DatePicker
                                     className="input-item"
-                                    placeholder="Sinh nhật"
+                                    placeholder="Ngày vào làm"
+                                    format='DD-MM-YYYY'
+                                    allowClear
+                                    />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="birthday"
+                                label="Sinh nhật"
+                                >
+                                <DatePicker
+                                    className="input-item"
+                                    format='DD-MM-YYYY'
+                                    placeholder="Sinh nhật"                                    
                                     allowClear
                                 />
                             </Form.Item>
@@ -282,4 +333,4 @@ const ModalCompany = ({ action, onHide, currentData, refetch }: IModalCompany) =
     )
 };
 
-export default memo(ModalCompany);
+export default memo(ModalStaff);

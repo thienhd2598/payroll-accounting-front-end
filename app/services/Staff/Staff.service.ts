@@ -1,29 +1,38 @@
 import apiClient from 'services';
-import {
-    GetListStaffParams,
-    GetListStaffResponse,
-    GetDetailStaffResponse
-} from './Staff.types';
-import queryString from 'querystring';
-import { PromiseResponse } from 'services/types';
 
-const getListStaff = async ({ keyword, email }: GetListStaffParams): PromiseResponse<GetListStaffResponse> => {
-    const requestUrl = `/admin/staff?${queryString.stringify({ keyword, email })}`;
-    const response = await apiClient.get<GetListStaffResponse>(requestUrl);
+const getAllStaff = async () => {
+    const requestUrl = '/staff';
+    const response = await apiClient.get(requestUrl);
 
-    return response.data;
+    return response
 };
 
-const getDetailStaff = async ({ id }: { id: number }): PromiseResponse<GetDetailStaffResponse> => {
-    const requestUrl = `/admin/staff/${id}`;
-    const response = await apiClient.get<GetDetailStaffResponse>(requestUrl);
-    
-    return response.data;
+const createStaff = async (body: any) => {
+    const requestUrl = '/staff/create';
+    const response = await apiClient.post(requestUrl, body);
+
+    return response
 };
+
+const updateStaff = async ({ id, ...args }) => {
+    const requestUrl = `/staff/${id}`;
+    const response = await apiClient.patch(requestUrl, { ...args });
+
+    return response
+}
+
+const deleteStaff = async (id: string) => {
+    const requestUrl = `/staff/${id}`;
+    const response = await apiClient.delete(requestUrl);
+
+    return response;
+}
 
 const StaffService = {
-    getListStaff,
-    getDetailStaff
+    getAllStaff,
+    createStaff,
+    updateStaff,
+    deleteStaff
 };
 
 export default StaffService;

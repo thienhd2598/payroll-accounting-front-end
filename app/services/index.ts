@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
+    // baseURL: 'https://payroll-api.herokuapp.com',
     baseURL: 'http://localhost:4001',
     headers: {
         "Content-type": "application/json",        
@@ -9,15 +10,15 @@ const apiClient = axios.create({
 
 const onSuccessInterceptorRequest = config => {
     const newConfig = { ...config };
-    const token = localStorage.getItem('jwt-token-admin');
+    const token = localStorage.getItem('jwt-token');
     if (token && !newConfig.headers.Authorization)
         newConfig.headers.Authorization = `Bearer ${token}`;
                             
     return newConfig;
 };
 
-const onSuccessInterceptorResponse = (response) => {
-    return response;
+const onSuccessInterceptorResponse = (response) => {    
+    return response?.data;
 };
 
 const onErrorInterceptorResponse = async (error: Error) => {

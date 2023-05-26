@@ -12,7 +12,7 @@ interface IColumnProps {
     setCurrentData?: any
 }
 
-const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
+const buildColumn = ({ showConfirmDelete, setCurrentData }: IColumnProps) => {
     return [
         {
             title: 'STT',
@@ -24,42 +24,42 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
         },
         {
             title: 'Tên nhân viên',
-            dataIndex: 'name',
-            key: 'name',
-            render: (name) => (
-                <Text>{name || '--'}</Text>
+            dataIndex: 'staff',
+            key: 'staff',
+            render: (staff) => (
+                <Text>{staff?.name || '--'}</Text>
             )
         },
         {
             title: 'Ngày công đi làm',
-            dataIndex: 'email',
-            key: 'email',
-            render: (email) => (
-                <Text>{email || '--'}</Text>
+            dataIndex: 'work_days',
+            key: 'work_days',
+            render: (work_days) => (
+                <Text>{work_days || '--'}</Text>
             )
         },
         {
             title: 'Ngày công lễ, phép',
-            dataIndex: 'department',
-            key: 'department',
-            render: (department) => (
-                <Text>{department || '--'}</Text>
+            dataIndex: 'work_days_holiday',
+            key: 'work_days_holiday',
+            render: (work_days_holiday) => (
+                <Text>{work_days_holiday || '--'}</Text>
             )
         },
         {
             title: 'Thêm giờ thường',
-            dataIndex: 'position',
-            key: 'position',
-            render: (position) => (
-                <Text>{position || '--'}</Text>
+            dataIndex: 'bonus_hours',
+            key: 'bonus_hours',
+            render: (bonus_hours) => (
+                <Text>{bonus_hours || '--'}</Text>
             )
         },
         {
             title: 'Thêm giờ lễ',
-            dataIndex: 'phone',
-            key: 'phone',
-            render: (phone) => (
-                <Text>{phone || '--'}</Text>
+            dataIndex: 'bonus_hours_holiday',
+            key: 'bonus_hours_holiday',
+            render: (bonus_hours_holiday) => (
+                <Text>{bonus_hours_holiday || '--'}</Text>
             )
         },
         {
@@ -74,6 +74,7 @@ const buildColumn = ({ showConfirmDelete }: IColumnProps) => {
                     <Space direction="horizontal" size={15}>
                         <Button
                             type='primary'
+                            onClick={() => setCurrentData(record)}
                         >
                             Cập nhật
                         </Button>

@@ -7,12 +7,12 @@ import React, {
     memo, useCallback, useEffect, useLayoutEffect, useState
 } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useLayoutContext } from '../Layout/LayoutContext';
-import buildColumn from './components/PositionColumn';
+import { useLayoutContext } from '../../Layout/LayoutContext';
+import buildColumn from './components/IncomeTaxColumn';
 import StaffService from 'services/Staff/Staff.service';
 import { useMutation, useQuery } from 'react-query';
-import ModalStaff from './components/ModalPosition';
-import PositionService from 'services/Position/Position.service';
+import ModalIncomeTax from './components/ModalIncomeTax';
+import IncomeTaxService from 'services/IncomeTax/IncomeTax.service';
 import { showAlert } from 'utils/helper';
 
 
@@ -42,22 +42,22 @@ const Page = () => {
     const [action, setAction] = useState<string>('');
 
     const { isLoading, data, refetch } = useQuery(
-        'GET_LIST_Position',
+        '   GET_LIST_INCOMETAX',
         async () => {
-            const response = await PositionService.getAllPosition();
+            const response = await IncomeTaxService.getAllIncomeTax();
 
             return response.data;
         }, {
         staleTime: 10 * (60 * 1000),
     });
 
-    const { isLoading: loadingDeletePosition, mutate: mutateDeletePosition, } = useMutation(
+    const { isLoading: loadingDeleteIncomeTax, mutate: mutateDeleteIncomeTax, } = useMutation(
         (id: string) => {
-            return PositionService.deletePosition(id);
+            return IncomeTaxService.deleteIncomeTax(id);
         }, {
         onSuccess: (res: any) => {            
             if (res?.statusCode === 200) {
-                showAlert.success('Xóa chức vụ thành công');
+                showAlert.success('Xóa cấp bậc thuế thành công');
                 refetch();                
             } else {
                 showAlert.error(res?.message || 'Đã có lỗi xảy ra, vui lòng thử lại')
@@ -68,9 +68,7 @@ const Page = () => {
             showAlert.error(err?.message || 'Đã có lỗi xảy ra, vui lòng thử lại');
         },
     }
-    );
-
-    console.log({ data });
+    );    
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -79,15 +77,15 @@ const Page = () => {
                 pathname: '/',
             },
             {
-                title: 'Quản lý chức vụ',
-                pathname: '/quan-ly-chuc-vu/',
+                title: 'Quản lý cấp bậc thuế',
+                pathname: '/thue-thu-nhap-ca-nhan/',
             },
         ]);
     }, []);
 
     const showConfirmDelete = useCallback((id: string) => {
         confirm({
-            title: `Bạn có muốn xoá chức vụ này?`,
+            title: `Bạn có muốn xoá cấp bậc thuế này?`,
             icon: <ExclamationCircleFilled />,
             style: { top: '35vh' },
             okText: 'Xoá',
@@ -102,7 +100,7 @@ const Page = () => {
                 style: { minWidth: 80 }
             },
             onOk: async () => {
-                mutateDeletePosition(id)
+                mutateDeleteIncomeTax(id)
             },
             onCancel() { },
         });
@@ -110,10 +108,10 @@ const Page = () => {
 
     return (
         <React.Fragment>
-            <Helmet titleTemplate="Quản lý chức vụ - Admin" defaultTitle="Quản lý chức vụ - Admin">
-                <meta name="description" content="Quản lý chức vụ - Admin" />
+            <Helmet titleTemplate="Quản lý cấp bậc thuế - Admin" defaultTitle="Quản lý cấp bậc thuế - Admin">
+                <meta name="description" content="Quản lý cấp bậc thuế - Admin" />
             </Helmet>
-            <ModalStaff
+            <ModalIncomeTax
                 action={action}
                 refetch={refetch}
                 currentData={currentData}
@@ -124,14 +122,17 @@ const Page = () => {
             />
             <Card
                 style={{ marginBottom: 20 }}
-                title="Danh sách chức vụ"
+                title="Danh sách cấp bậc thuế"
                 bordered={false}
                 extra={
                     <Button
                         type="primary"
                         className="btn-base"
                         icon={<PlusOutlined className="icon-base" />}
-                        onClick={() => setAction('create')}
+                        onClick={() => {
+                            setAction('create')
+                            setCurrentData(null);
+                        }}
                     >
                         Thêm mới
                     </Button>
@@ -146,8 +147,8 @@ const Page = () => {
                         onReSearch={() => { }}
                     /> */}
                     <TableCommon
-                        dataSource={data?.positions || []}
-                        loading={isLoading || loadingDeletePosition}
+                        dataSource={data?.incomeTaxs || []}
+                        loading={isLoading || loadingDeleteIncomeTax}
                         pagination={{
                             showTotal: (total: number) => <Text>Tổng số {total}</Text>,
                         }}
