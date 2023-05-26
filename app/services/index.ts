@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-    // baseURL: 'https://payroll-api.herokuapp.com',
-    baseURL: 'http://localhost:4001',
+    baseURL: 'https://payroll-api.herokuapp.com',
+    // baseURL: 'http://localhost:4001',
     headers: {
         "Content-type": "application/json",        
     },

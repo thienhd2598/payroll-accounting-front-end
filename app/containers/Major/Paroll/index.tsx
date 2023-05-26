@@ -16,176 +16,13 @@ import locale from 'antd/lib/locale/vi_VN';
 import { useMutation, useQuery } from 'react-query';
 import StaffService from 'services/Staff/Staff.service';
 import * as _ from 'lodash';
+import HtmlPrint from './components/HtmlPrint';
 
 const { Panel } = Collapse;
 
 const { Option } = Select;
 const { confirm } = Modal;
 const { Text } = Typography;
-
-const columns: any = [
-    {
-        title: 'STT',
-        dataIndex: 'id',
-        key: 'id',
-        width: 50,
-        fixed: 'left',
-        render: (id: number, row, index: number) => (
-            <Text>{index + 1}</Text>
-        ),
-    },
-    {
-        title: 'Tên nhân viên',
-        dataIndex: 'name',
-        key: 'name',
-        width: 150,
-        fixed: 'left',
-        render: (name) => (
-            <Text>{name || '--'}</Text>
-        ),
-    },
-    {
-        title: 'Số công',
-        dataIndex: 'work_days',
-        key: 'work_days',
-        width: 100,
-        render: (work_days) => (
-            <Text>{formatNumberToCurrency(work_days) || '--'} ngày</Text>
-        ),
-    },
-    {
-        title: 'Lương cơ bản',
-        dataIndex: 'salary_basic',
-        key: 'salary_basic',
-        width: 100,
-        render: (salary_basic) => (
-            <Text>{formatNumberToCurrency(salary_basic) || '--'} vnđ</Text>
-        ),
-    },
-    {
-        title: 'Ngày nghỉ lễ, phép',
-        dataIndex: 'work_days_holiday',
-        key: 'work_days_holiday',
-        width: 100,
-        render: (work_days_holiday) => (
-            <Text>{formatNumberToCurrency(work_days_holiday) || '--'} ngày</Text>
-        ),
-    },
-    {
-        title: 'Giờ làm thêm',
-        children: [
-            {
-                title: 'Ngày thường',
-                dataIndex: 'bonus_hours',
-                key: 'bonus_hours',
-                width: 100,
-                render: (bonus_hours) => (
-                    <Text>{formatNumberToCurrency(bonus_hours) || '--'} giờ</Text>
-                ),
-            },
-            {
-                title: 'Ngày lễ',
-                dataIndex: 'bonus_hours_holiday',
-                key: 'bonus_hours_holiday',
-                width: 100,
-                render: (bonus_hours_holiday) => (
-                    <Text>{formatNumberToCurrency(bonus_hours_holiday) || '--'} giờ</Text>
-                ),
-            },
-        ],
-    }, {
-        title: 'Phụ cấp',
-        dataIndex: 'allowance',
-        key: 'allowance',
-        width: 100,
-        render: (allowance) => (
-            <Text>{formatNumberToCurrency(allowance) || '--'} vnđ</Text>
-        ),
-    },
-    {
-        title: 'Tổng tiền làm thêm',
-        dataIndex: 'salary_bonus',
-        key: 'salary_bonus',
-        width: 100,
-        render: (salary_bonus) => (
-            <Text>{formatNumberToCurrency(salary_bonus) || '--'}</Text>
-        ),
-    },
-    {
-        title: 'Khấu trừ',
-        children: [
-            {
-                title: 'BHXH',
-                dataIndex: 'insurance_social_rate',
-                key: 'insurance_social_rate',
-                width: 100,
-                render: (insurance_social_rate) => (
-                    <Text>{formatNumberToCurrency(insurance_social_rate) || '--'} vnđ</Text>
-                ),
-            },
-            {
-                title: 'BHYT',
-                dataIndex: 'insurance_health_rate',
-                key: 'insurance_health_rate',
-                width: 100,
-                render: (insurance_health_rate) => (
-                    <Text>{formatNumberToCurrency(insurance_health_rate) || '--'} vnđ</Text>
-                ),
-            },
-            {
-                title: 'BHTN',
-                dataIndex: 'insurance_unemployment_rate',
-                key: 'insurance_unemployment_rate',
-                width: 100,
-                render: (insurance_unemployment_rate) => (
-                    <Text>{formatNumberToCurrency(insurance_unemployment_rate) || '--'} vnđ</Text>
-                ),
-            },
-        ],
-    },
-    {
-        title: 'Khấu trừ TNCN',
-        dataIndex: 'rate',
-        key: 'rate',
-        width: 100,
-        render: (rate) => (
-            <Text>{formatNumberToCurrency(rate) || '--'} vnđ</Text>
-        ),
-    },
-    {
-        title: 'Thực lĩnh',
-        dataIndex: 'salaryTotal',
-        key: 'salaryTotal',
-        width: 100,
-        render: (salaryTotal) => (
-            <Text>{formatNumberToCurrency(salaryTotal) || '--'}</Text>
-        ),
-    },
-    {
-        title: 'Thao tác',
-        dataIndex: 'action',
-        key: 'action',
-        fixed: 'right',
-        align: 'center',
-        width: 100,
-        render: (_, record: any) => {
-            return (
-                <Space direction="horizontal" size={15}>
-                    <Tooltip placement="top" title="Xuất báo cáo">
-                        <Button
-                            size="middle"
-                            type="primary"
-                            shape="circle"
-                            icon={<PrinterOutlined className='icon-base' />}
-                            style={{ background: '#13c2c2' }}
-                            onClick={() => { }}
-                        />
-                    </Tooltip>
-                </Space>
-            );
-        },
-    },
-]
 
 const Page = () => {
     const client = createApolloClient();
@@ -195,6 +32,7 @@ const Page = () => {
     const [showPayroll, setShowPayroll] = useState<boolean>(false);
     const [dataPayroll, setDataPayroll] = useState<any>([]);
     const [action, setAction] = useState<string>('');
+    const [isShow, setIsShow] = useState<boolean>(false);
 
     useLayoutEffect(() => {
         appendBreadcrumb([
@@ -261,11 +99,178 @@ const Page = () => {
         });
     }, []);
 
+    const columns: any = [
+        {
+            title: 'STT',
+            dataIndex: 'id',
+            key: 'id',
+            width: 50,
+            fixed: 'left',
+            render: (id: number, row, index: number) => (
+                <Text>{index + 1}</Text>
+            ),
+        },
+        {
+            title: 'Tên nhân viên',
+            dataIndex: 'name',
+            key: 'name',
+            width: 150,
+            fixed: 'left',
+            render: (name) => (
+                <Text>{name || '--'}</Text>
+            ),
+        },
+        {
+            title: 'Số công',
+            dataIndex: 'work_days',
+            key: 'work_days',
+            width: 100,
+            render: (work_days) => (
+                <Text>{formatNumberToCurrency(work_days) || '--'} ngày</Text>
+            ),
+        },
+        {
+            title: 'Lương cơ bản',
+            dataIndex: 'salary_basic',
+            key: 'salary_basic',
+            width: 100,
+            render: (salary_basic) => (
+                <Text>{formatNumberToCurrency(salary_basic) || '--'} vnđ</Text>
+            ),
+        },
+        {
+            title: 'Ngày nghỉ lễ, phép',
+            dataIndex: 'work_days_holiday',
+            key: 'work_days_holiday',
+            width: 100,
+            render: (work_days_holiday) => (
+                <Text>{formatNumberToCurrency(work_days_holiday) || '--'} ngày</Text>
+            ),
+        },
+        {
+            title: 'Giờ làm thêm',
+            children: [
+                {
+                    title: 'Ngày thường',
+                    dataIndex: 'bonus_hours',
+                    key: 'bonus_hours',
+                    width: 100,
+                    render: (bonus_hours) => (
+                        <Text>{formatNumberToCurrency(bonus_hours) || '--'} giờ</Text>
+                    ),
+                },
+                {
+                    title: 'Ngày lễ',
+                    dataIndex: 'bonus_hours_holiday',
+                    key: 'bonus_hours_holiday',
+                    width: 100,
+                    render: (bonus_hours_holiday) => (
+                        <Text>{formatNumberToCurrency(bonus_hours_holiday) || '--'} giờ</Text>
+                    ),
+                },
+            ],
+        }, {
+            title: 'Phụ cấp',
+            dataIndex: 'allowance',
+            key: 'allowance',
+            width: 100,
+            render: (allowance) => (
+                <Text>{formatNumberToCurrency(allowance) || '--'} vnđ</Text>
+            ),
+        },
+        {
+            title: 'Tổng tiền làm thêm',
+            dataIndex: 'salary_bonus',
+            key: 'salary_bonus',
+            width: 100,
+            render: (salary_bonus) => (
+                <Text>{formatNumberToCurrency(salary_bonus) || '--'}</Text>
+            ),
+        },
+        {
+            title: 'Khấu trừ',
+            children: [
+                {
+                    title: 'BHXH',
+                    dataIndex: 'insurance_social_rate',
+                    key: 'insurance_social_rate',
+                    width: 100,
+                    render: (insurance_social_rate) => (
+                        <Text>{formatNumberToCurrency(insurance_social_rate) || '--'} vnđ</Text>
+                    ),
+                },
+                {
+                    title: 'BHYT',
+                    dataIndex: 'insurance_health_rate',
+                    key: 'insurance_health_rate',
+                    width: 100,
+                    render: (insurance_health_rate) => (
+                        <Text>{formatNumberToCurrency(insurance_health_rate) || '--'} vnđ</Text>
+                    ),
+                },
+                {
+                    title: 'BHTN',
+                    dataIndex: 'insurance_unemployment_rate',
+                    key: 'insurance_unemployment_rate',
+                    width: 100,
+                    render: (insurance_unemployment_rate) => (
+                        <Text>{formatNumberToCurrency(insurance_unemployment_rate) || '--'} vnđ</Text>
+                    ),
+                },
+            ],
+        },
+        {
+            title: 'Khấu trừ TNCN',
+            dataIndex: 'rate',
+            key: 'rate',
+            width: 100,
+            render: (rate) => (
+                <Text>{formatNumberToCurrency(rate) || '--'} vnđ</Text>
+            ),
+        },
+        {
+            title: 'Thực lĩnh',
+            dataIndex: 'salaryTotal',
+            key: 'salaryTotal',
+            width: 100,
+            render: (salaryTotal) => (
+                <Text>{formatNumberToCurrency(salaryTotal) || '--'}</Text>
+            ),
+        },
+        {
+            title: 'Thao tác',
+            dataIndex: 'action',
+            key: 'action',
+            fixed: 'right',
+            align: 'center',
+            width: 100,
+            render: (_, record: any) => {
+                return (
+                    <Space direction="horizontal" size={15}>
+                        <Tooltip placement="top" title="Xuất báo cáo">
+                            <Button
+                                size="middle"
+                                type="primary"
+                                shape="circle"
+                                icon={<PrinterOutlined className='icon-base' />}
+                                style={{ background: '#13c2c2' }}
+                                onClick={() => setIsShow(true)}
+                            />
+                        </Tooltip>
+                    </Space>
+                );
+            },
+        },
+    ];
+
     return (
         <React.Fragment>
             <Helmet titleTemplate="Tính lương - Admin" defaultTitle="Tính lương - Admin">
                 <meta name="description" content="Tính lương - Admin" />
             </Helmet>
+
+            {isShow && <HtmlPrint isShowPrint={isShow} onHide={() => setIsShow(false)} />}
+
             <Modal
                 title={'Tính lương nhân viên'}
                 open={showPayroll}
