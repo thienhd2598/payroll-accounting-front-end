@@ -102,18 +102,18 @@ const MenuLayout = () => {
               key: '/bao-cao-luong',
               label: 'Báo cáo lương'
             },
-            {
-              key: '/bao-cao-cac-khoan-trich-theo-luong',
-              label: 'Báo cáo các khoản trích theo lương'
-            },
-            {
-              key: '/bao-cao-bao-hiem',
-              label: 'Báo cáo bảo hiểm'
-            },
-            {
-              key: '/bao-cao-thue-tncn',
-              label: 'Báo cáo thuế TNCN'
-            },
+            // {
+            //   key: '/bao-cao-cac-khoan-trich-theo-luong',
+            //   label: 'Báo cáo các khoản trích theo lương'
+            // },
+            // {
+            //   key: '/bao-cao-bao-hiem',
+            //   label: 'Báo cáo bảo hiểm'
+            // },
+            // {
+            //   key: '/bao-cao-thue-tncn',
+            //   label: 'Báo cáo thuế TNCN'
+            // },
           ]
         } : {})
       ]

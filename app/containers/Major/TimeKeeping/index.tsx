@@ -118,12 +118,12 @@ const Page = () => {
                     Thêm bảng chấm công
                 </Button>
                 <Space className='space-base' direction="vertical" size={30}>
-                    {Object.keys(dataTimeKeeping).map((item, index) => {
-                        console.log({ item });
+                    {Object.keys(dataTimeKeeping).map((item, index) => {                        
                         return (
                             <Collapse
                                 expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
                                 bordered={false}
+                                defaultActiveKey={['1']}
                                 style={{ background: '#fff' }}
                             >
                                 <Panel header={

@@ -14,6 +14,13 @@ const createStaff = async (body: any) => {
     return response
 };
 
+const payrollStaff = async (body: any) => {
+    const requestUrl = '/staff/payroll';
+    const response = await apiClient.post(requestUrl, body);
+
+    return response
+};
+
 const updateStaff = async ({ id, ...args }) => {
     const requestUrl = `/staff/${id}`;
     const response = await apiClient.patch(requestUrl, { ...args });
@@ -31,6 +38,7 @@ const deleteStaff = async (id: string) => {
 const StaffService = {
     getAllStaff,
     createStaff,
+    payrollStaff,
     updateStaff,
     deleteStaff
 };

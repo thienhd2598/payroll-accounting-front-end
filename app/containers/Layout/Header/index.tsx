@@ -71,6 +71,7 @@ const MenuHeaderDropdown = ({ onChangePass, onChangeProfile }: { onChangePass: (
 const HeaderLayout = () => {
     const [showChangePass, setShowChangePass] = useState<boolean>(false);    
     const [showChangeProfile, setShowChangeProfile] = useState<boolean>(false);
+    const role = localStorage.getItem('role');
 
     return (
         <HeaderLayoutWrapper>
@@ -91,10 +92,11 @@ const HeaderLayout = () => {
                         <Avatar
                             className="header-avatar"
                             alt="avatar"
-                            src={avatar}
+                            // src={avatar}
+                            src={'https://i.pinimg.com/564x/36/ff/3e/36ff3e2c6bed15fe80fe772ce821f74b.jpg'}
                         />
                     </Badge>
-                    <Text>{localStorage.getItem('info_admin') ? JSON.parse(localStorage.getItem('info_admin') || 'Trần Phương Linh')?.name : 'Trần Phương Linh'}</Text>
+                    <Text>{role == 'admin' ? 'Tài khoản kế toán' : 'Tài khoản hành chính nhân sự'}</Text>
                 </div>
             </Dropdown>
         </HeaderLayoutWrapper>
